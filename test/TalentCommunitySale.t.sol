@@ -28,13 +28,27 @@ contract TalentCommunitySaleTest is Test {
 
     assertEq(result, receivingWallet);
   }
+ 
+  function testInitialTotalRaisedIsZero() public {
+    uint256 initialTotalRaised = talentCommunitySale.totalRaised();
+    assertEq(initialTotalRaised, 0);
+  }
 
 
-  // contract DeployContract is Script {
-  //   function run() external returns(SimpleStorage) {
-  //       vm.startBroadcast();
-  //       SimpleStorage simpleStorage = new SimpleStorage();
-  //       vm.stopBroadcast();
-  //       return simpleStorage;
-  //   }
+  function testTotalRaisedUpdatesCorrectly() public {
+    uint256 raisedAmount = 0;
+    uint256 updatedTotalRaised = talentCommunitySale.totalRaised();
+    assertEq(updatedTotalRaised, raisedAmount);
+  }
+
+
+  function testEnableSale() public {
+    assertEq(talentCommunitySale.saleActive(), false);
+    talentCommunitySale.enableSale();
+    assertEq(talentCommunitySale.saleActive(), true);
+  }
+
+
+
+
 }
