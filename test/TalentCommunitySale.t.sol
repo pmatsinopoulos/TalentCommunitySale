@@ -19,8 +19,15 @@ contract TalentCommunitySaleTest is Test {
             new TalentCommunitySale(initialOwner, address(paymentToken), receivingWallet, tokenDecimals);
     }
 
-    function testTier1WithinLimit() public {
-        //talentCommunitySale.buyTier1(0); // Another 50, reaching limit
+    function test_OwnerIsGivenAsFirstArgument() public view {
+        assertEq(talentCommunitySale.owner(), initialOwner);
+    }
+
+    function test_PaymentTokenIsGivenAsArgument() public view {
+        assertEq(address(talentCommunitySale.paymentToken()), address(paymentToken));
+    }
+
+    function testTier1WithinLimit() public view {
         assertEq(talentCommunitySale.tier1Bought(), 0);
     }
 
@@ -30,20 +37,31 @@ contract TalentCommunitySaleTest is Test {
         assertEq(result, receivingWallet);
     }
 
-    function testInitialTotalRaisedIsZero() public {
+    function test_InitialTotalRaisedIsZero() public view {
         uint256 initialTotalRaised = talentCommunitySale.totalRaised();
         assertEq(initialTotalRaised, 0);
     }
 
-    function testTotalRaisedUpdatesCorrectly() public {
-        uint256 raisedAmount = 0;
+    function test_TotalRaisedUpdatesCorrectly() public {
         uint256 updatedTotalRaised = talentCommunitySale.totalRaised();
-        assertEq(updatedTotalRaised, raisedAmount);
+        assertEq(updatedTotalRaised, 0);
     }
 
-    function testEnableSale() public {
+    function test_EnableSale() public {
         assertEq(talentCommunitySale.saleActive(), false);
+
         talentCommunitySale.enableSale();
+
         assertEq(talentCommunitySale.saleActive(), true);
+    }
+
+    function test_DisableSale() public {
+        talentCommunitySale.enableSale();
+
+        assertEq(talentCommunitySale.saleActive(), true);
+
+        talentCommunitySale.disableSale();
+
+        assertEq(talentCommunitySale.saleActive(), false);
     }
 }
