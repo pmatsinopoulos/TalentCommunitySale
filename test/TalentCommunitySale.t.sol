@@ -23,6 +23,13 @@ contract TalentCommunitySaleTest is Test {
     );
   }
 
+
+
+      function testTier1WithinLimit() public {
+        //talentCommunitySale.buyTier1(0); // Another 50, reaching limit
+        assertEq(talentCommunitySale.tier1Bought(), 0);
+    }
+
   function test_ReceivingWalletReturnsTheWalletWeDeployedWith() public view {
     address result = talentCommunitySale.receivingWallet();
 
