@@ -66,6 +66,9 @@ contract TalentCommunitySaleTest is Test {
         assertEq(talentCommunitySale.saleActive(), false);
     }
 
+    // -----------------------------------------------
+    // buyTier1() ------------------------------------
+
     function test_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
@@ -159,4 +162,12 @@ contract TalentCommunitySaleTest is Test {
     }
 
     // TODO: Write tests for lines 65 - 68
+
+    // end of buyTier1() --------------------------------------
+    // --------------------------------------------------------
+
+    // -----------------------------------------------
+    // buyTier2() ------------------------------------
+
+    // ..... TODO .....
 }
