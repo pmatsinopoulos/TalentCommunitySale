@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.27;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {TalentCommunitySale} from "../src/TalentCommunitySale.sol";
 import {USDTMock} from "./ERC20Mock.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -63,5 +63,53 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.disableSale();
 
         assertEq(talentCommunitySale.saleActive(), false);
+    }
+
+    function test_whenSaleIsNotActiveItReverts() public {
+        talentCommunitySale.disableSale();
+
+        vm.expectRevert("TalentCommunitySale: Sale is not active");
+
+        talentCommunitySale.buyTier1();
+    }
+
+    function test_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() public {
+        talentCommunitySale.enableSale();
+
+        vm.expectRevert("TalentCommunitySale: Insufficient allowance");
+
+        talentCommunitySale.buyTier1();
+    }
+
+    function test_WhenTier1BoughtIsGreaterThanTIER1_MAX_BUYS_ItReverts() public {
+        talentCommunitySale.enableSale();
+        uint32 tier1MaxBuys = talentCommunitySale.TIER1_MAX_BUYS(); // 100
+
+        for (uint256 i = 1; i <= tier1MaxBuys + 1; i++) {
+          address caller = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
+          // Panos address
+          // John address
+          // ... more address
+
+          uint256 amount = 100 * 10 ** tokenDecimals;
+          paymentToken.transfer(caller, amount);
+          // Panos now has 100M USDT
+          // John 100M USDT
+          // ..100 addresses everything goes well.
+
+          // Panos approves the contract TalentCommunitySale to spend that 100M
+          // John approve....
+          vm.prank(caller); // sets the "msg.sender" of the next contract call.
+          paymentToken.approve(address(talentCommunitySale), amount);
+
+          if (i == tier1MaxBuys + 1) { // i is 101
+            vm.expectRevert("TalentCommunitySale: Tier 1 sold out");
+          }
+
+          // Panos is asking the contract TaletnCommunitySale to buyAtTier1 100M
+          // John is asking...
+          vm.prank(caller);
+          talentCommunitySale.buyTier1();
+        }
     }
 }
