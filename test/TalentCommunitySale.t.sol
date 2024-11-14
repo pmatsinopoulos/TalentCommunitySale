@@ -5,7 +5,6 @@ import {Test, console} from "forge-std/Test.sol";
 import {TalentCommunitySale} from "../src/TalentCommunitySale.sol";
 import {USDTMock} from "./ERC20Mock.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-//import {ERC20InsufficientBalance} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 
 contract TalentCommunitySaleTest is Test {
     TalentCommunitySale talentCommunitySale;
@@ -14,8 +13,8 @@ contract TalentCommunitySaleTest is Test {
     IERC20 paymentToken = new USDTMock();
     address receivingWallet = address(1337);
     uint256 tokenDecimals = 6;
-    error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
 
+    error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
 
     function setUp() public {
         talentCommunitySale =
@@ -164,6 +163,33 @@ contract TalentCommunitySaleTest is Test {
         );
         vm.prank(caller);
         talentCommunitySale.buyTier1();
+    }
+
+    function test_IncrementOftier1Bought_Increment() public {
+        talentCommunitySale.enableSale();
+        uint256 tier1Bought = talentCommunitySale.tier1Bought();
+        address caller = address(12347);
+
+        vm.expectRevert("TalentCommunitySale: Insufficient allowance");
+
+        //assertEq(updatedTier1, tier1Bought + 1);
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier1();
+
+        assertEq(tier1Bought, 0);
+    }
+
+    function test_ListOfBuyers() public {
+        address buyer1 = address(uint160(22333));
+        assertEq(talentCommunitySale.listOfBuyers(buyer1), false);
+         talentCommunitySale.enableSale();
+
+        vm.expectRevert();
+
+        vm.prank(buyer1);
+        talentCommunitySale.buyTier1();
+        assertEq(talentCommunitySale.listOfBuyers(buyer1), false);
     }
 
     // TODO: Write tests for lines 65 - 68
