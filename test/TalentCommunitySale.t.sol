@@ -154,11 +154,7 @@ contract TalentCommunitySaleTest is Test {
         vm.prank(caller);
         paymentToken.approve(address(talentCommunitySale), amount);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                ERC20InsufficientBalance.selector, caller, amount - 1, amount
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(ERC20InsufficientBalance.selector, caller, amount - 1, amount));
         vm.prank(caller);
 
         talentCommunitySale.buyTier1();
