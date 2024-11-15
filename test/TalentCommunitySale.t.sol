@@ -72,7 +72,7 @@ contract TalentCommunitySaleTest is Test {
     // -----------------------------------------------
     // buyTier1() ------------------------------------
 
-    function test_whenSaleIsNotActiveItReverts() public {
+    function test_BuyTier1_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
         vm.expectRevert("TalentCommunitySale: Sale is not active");
@@ -80,7 +80,7 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
     }
 
-    function test_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() public {
+    function test_BuyTier1_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() public {
         talentCommunitySale.enableSale();
 
         vm.expectRevert("TalentCommunitySale: Insufficient allowance");
@@ -88,7 +88,7 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
     }
 
-    function test_WhenTier1BoughtIsGreaterThanTIER1_MAX_BUYS_ItReverts() public {
+    function test_BuyTier1_WhenTier1BoughtIsGreaterThanTIER1_MAX_BUYS_ItReverts() public {
         talentCommunitySale.enableSale();
         uint32 tier1MaxBuys = talentCommunitySale.TIER1_MAX_BUYS(); // 100
 
@@ -121,7 +121,7 @@ contract TalentCommunitySaleTest is Test {
         }
     }
 
-    function test_WhenCallerHasAlreadyBought_ItReverts() public {
+    function test_BuyTier1_WhenCallerHasAlreadyBought_ItReverts() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -142,7 +142,7 @@ contract TalentCommunitySaleTest is Test {
         }
     }
 
-    function test_WhenCallerDoesNotHaveEnoughBalance_ItReverts() public {
+    function test_BuyTier1_WhenCallerDoesNotHaveEnoughBalance_ItReverts() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -160,7 +160,7 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
     }
 
-    function test_Tier1BoughtIsIncrementedByOne() public {
+    function test_BuyTier1_Tier1BoughtIsIncrementedByOne() public {
         talentCommunitySale.enableSale();
 
         uint32 tier1BoughtBefore = talentCommunitySale.tier1Bought();
@@ -182,7 +182,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(tier1BoughtAfter, tier1BoughtBefore + 1);
     }
 
-    function test_Tier1BoughtAddsBuyerToListOfBuyers() public {
+    function test_BuyTier1_Tier1BoughtAddsBuyerToListOfBuyers() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -203,7 +203,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(talentCommunitySale.listOfBuyers(caller), true);
     }
 
-    function test_BuyingTier1IncreasesTotalRaisedBy100() public {
+    function test_BuyTier1_BuyingTier1IncreasesTotalRaisedBy100() public {
         talentCommunitySale.enableSale();
 
         uint256 totalRaisedBefore = talentCommunitySale.totalRaised();
@@ -225,7 +225,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(totalRaisedAfter, totalRaisedBefore + (100 * 10 ** tokenDecimals));
     }
 
-    function test_BuyingTier1EmitsTier1Bought() public {
+    function test_BuyTier1_BuyingTier1EmitsTier1Bought() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
