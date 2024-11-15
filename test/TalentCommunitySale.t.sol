@@ -14,6 +14,8 @@ contract TalentCommunitySaleTest is Test {
     address receivingWallet = address(1337);
     uint256 tokenDecimals = 6;
 
+    event Tier1Bought(address indexed buyer, uint256 amount);
+
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
 
     function setUp() public {
@@ -225,6 +227,25 @@ contract TalentCommunitySaleTest is Test {
         uint256 totalRaisedAfter = talentCommunitySale.totalRaised();
 
         assertEq(totalRaisedAfter, totalRaisedBefore + (100 * 10 ** tokenDecimals));
+    }
+
+    function test_BuyingTier1EmitsTier1Bought() public {
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 100 * 10 ** tokenDecimals;
+
+        paymentToken.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        vm.prank(caller);
+        vm.expectEmit(true, false, false, true);
+        emit Tier1Bought(caller, amount);
+
+        talentCommunitySale.buyTier1();
     }
 
     // TODO: Write tests for lines 65 - 68
