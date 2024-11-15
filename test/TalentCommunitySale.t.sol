@@ -165,7 +165,7 @@ contract TalentCommunitySaleTest is Test {
     function test_Tier1BoughtIsIncrementedByOne() public {
         talentCommunitySale.enableSale();
 
-        uint256 tier1BoughtBefore = talentCommunitySale.tier1Bought();
+        uint32 tier1BoughtBefore = talentCommunitySale.tier1Bought();
 
         address caller = address(12347);
 
@@ -203,6 +203,28 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
 
         assertEq(talentCommunitySale.listOfBuyers(caller), true);
+    }
+
+    function test_BuyingTier1IncreasesTotalRaisedBy100() public {
+        talentCommunitySale.enableSale();
+
+        uint256 totalRaisedBefore = talentCommunitySale.totalRaised();
+
+        address caller = address(12347);
+
+        uint256 amount = 100 * 10 ** tokenDecimals;
+
+        paymentToken.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier1();
+
+        uint256 totalRaisedAfter = talentCommunitySale.totalRaised();
+
+        assertEq(totalRaisedAfter, totalRaisedBefore + (100 * 10 ** tokenDecimals));
     }
 
     // TODO: Write tests for lines 65 - 68
