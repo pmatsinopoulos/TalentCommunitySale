@@ -144,52 +144,65 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
-        //address receiver = address(34556);
 
-        uint256 amount = 99 * 10 ** tokenDecimals;
+        uint256 amount = 100 * 10 ** tokenDecimals;
+
+        paymentToken.transfer(caller, amount - 1);
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ERC20InsufficientBalance.selector, caller, amount - 1, amount
+            )
+        );
+        vm.prank(caller);
+
+        talentCommunitySale.buyTier1();
+    }
+
+    function test_Tier1BoughtIsIncrementedByOne() public {
+        talentCommunitySale.enableSale();
+
+        uint256 tier1BoughtBefore = talentCommunitySale.tier1Bought();
+
+        address caller = address(12347);
+
+        uint256 amount = 100 * 10 ** tokenDecimals;
 
         paymentToken.transfer(caller, amount);
 
         vm.prank(caller);
-        paymentToken.approve(address(talentCommunitySale), 100 * 10 ** tokenDecimals);
-        uint256 balanceOfTheCaller = paymentToken.balanceOf(caller);
-        console.log(balanceOfTheCaller);
-        paymentToken.allowance(caller, address(talentCommunitySale));
+        paymentToken.approve(address(talentCommunitySale), amount);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                ERC20InsufficientBalance.selector, caller, balanceOfTheCaller, 100 * 10 ** tokenDecimals
-            )
-        );
         vm.prank(caller);
         talentCommunitySale.buyTier1();
+
+        uint32 tier1BoughtAfter = talentCommunitySale.tier1Bought();
+
+        assertEq(tier1BoughtAfter, tier1BoughtBefore + 1);
     }
 
-    function test_IncrementOftier1Bought_Increment() public {
+    function test_Tier1BoughtAddsBuyerToListOfBuyers() public {
         talentCommunitySale.enableSale();
-        uint256 tier1Bought = talentCommunitySale.tier1Bought();
+
         address caller = address(12347);
 
-        vm.expectRevert("TalentCommunitySale: Insufficient allowance");
+        uint256 amount = 100 * 10 ** tokenDecimals;
+        paymentToken.transfer(caller, amount);
 
-        //assertEq(updatedTier1, tier1Bought + 1);
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        // before buying, we make sure caller is not in the list
+        // of buyers
+        assertEq(talentCommunitySale.listOfBuyers(caller), false);
 
         vm.prank(caller);
         talentCommunitySale.buyTier1();
 
-        assertEq(tier1Bought, 0);
-    }
-
-    function test_ListOfBuyers() public {
-        address buyer1 = address(uint160(22333));
-        assertEq(talentCommunitySale.listOfBuyers(buyer1), false);
-         talentCommunitySale.enableSale();
-
-        vm.expectRevert();
-
-        vm.prank(buyer1);
-        talentCommunitySale.buyTier1();
-        assertEq(talentCommunitySale.listOfBuyers(buyer1), false);
+        assertEq(talentCommunitySale.listOfBuyers(caller), true);
     }
 
     // TODO: Write tests for lines 65 - 68
