@@ -248,8 +248,6 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
     }
 
-    // TODO: Write tests for lines 65 - 68
-
     // end of buyTier1() --------------------------------------
     // --------------------------------------------------------
 
