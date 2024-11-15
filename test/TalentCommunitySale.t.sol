@@ -17,6 +17,7 @@ contract TalentCommunitySaleTest is Test {
     event Tier1Bought(address indexed buyer, uint256 amount);
     event Tier2Bought(address indexed buyer, uint256 amount);
     event Tier3Bought(address indexed buyer, uint256 amount);
+    event Tier4Bought(address indexed buyer, uint256 amount);
 
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
 
@@ -575,6 +576,170 @@ contract TalentCommunitySaleTest is Test {
         emit Tier3Bought(caller, amount);
 
         talentCommunitySale.buyTier3();
+    }
+
+    // -----------------------------------------------
+    // buyTier4() ------------------------------------
+
+    function test_BuyTier4_whenSaleIsNotActiveItReverts() public {
+        talentCommunitySale.disableSale();
+
+        vm.expectRevert("TalentCommunitySale: Sale is not active");
+
+        talentCommunitySale.buyTier4();
+    }
+
+    function test_BuyTier4_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() public {
+        talentCommunitySale.enableSale();
+
+        vm.expectRevert("TalentCommunitySale: Insufficient allowance");
+
+        talentCommunitySale.buyTier4();
+    }
+
+    function test_BuyTier4_WhenTier4BoughtIsGreaterThanTIER4_MAX_BUYS_ItReverts() public {
+        talentCommunitySale.enableSale();
+        uint32 tier4MaxBuys = talentCommunitySale.TIER4_MAX_BUYS();
+
+        for (uint256 i = 1; i <= tier4MaxBuys + 1; i++) {
+            address caller = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
+
+            uint256 amount = 1000 * 10 ** tokenDecimals;
+            paymentToken.transfer(caller, amount);
+
+            vm.prank(caller); // sets the "msg.sender" of the next contract call.
+            paymentToken.approve(address(talentCommunitySale), amount);
+
+            if (i == tier4MaxBuys + 1) {
+                vm.expectRevert("TalentCommunitySale: Tier 4 sold out");
+            }
+
+            vm.prank(caller);
+            talentCommunitySale.buyTier4();
+        }
+    }
+
+    function test_BuyTier4_WhenCallerHasAlreadyBought_ItReverts() public {
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 1000 * 10 ** tokenDecimals;
+
+        for (uint256 i = 1; i <= 2; i++) {
+            paymentToken.transfer(caller, amount);
+
+            vm.prank(caller);
+            paymentToken.approve(address(talentCommunitySale), amount);
+
+            if (i == 2) {
+                vm.expectRevert("TalentCommunitySale: Address already bought");
+            }
+            vm.prank(caller);
+            talentCommunitySale.buyTier4();
+        }
+    }
+
+    function test_BuyTier4_WhenCallerDoesNotHaveEnoughBalance_ItReverts() public {
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 1000 * 10 ** tokenDecimals;
+
+        paymentToken.transfer(caller, amount - 1);
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        vm.expectRevert(abi.encodeWithSelector(ERC20InsufficientBalance.selector, caller, amount - 1, amount));
+        vm.prank(caller);
+
+        talentCommunitySale.buyTier4();
+    }
+
+    function test_BuyTier4_Tier4BoughtIsIncrementedByOne() public {
+        talentCommunitySale.enableSale();
+
+        uint32 tier4BoughtBefore = talentCommunitySale.tier4Bought();
+
+        address caller = address(12347);
+
+        uint256 amount = 1000 * 10 ** tokenDecimals;
+
+        paymentToken.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier4();
+
+        uint32 tier4BoughtAfter = talentCommunitySale.tier4Bought();
+
+        assertEq(tier4BoughtAfter, tier4BoughtBefore + 1);
+    }
+
+    function test_BuyTier4_Tier4BoughtAddsBuyerToListOfBuyers() public {
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 1000 * 10 ** tokenDecimals;
+        paymentToken.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        // before buying, we make sure caller is not in the list
+        // of buyers
+        assertEq(talentCommunitySale.listOfBuyers(caller), false);
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier4();
+
+        assertEq(talentCommunitySale.listOfBuyers(caller), true);
+    }
+
+    function test_BuyTier4_BuyingTier4IncreasesTotalRaisedBy1000() public {
+        talentCommunitySale.enableSale();
+
+        uint256 totalRaisedBefore = talentCommunitySale.totalRaised();
+
+        address caller = address(12347);
+
+        uint256 amount = 1000 * 10 ** tokenDecimals;
+
+        paymentToken.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier4();
+
+        uint256 totalRaisedAfter = talentCommunitySale.totalRaised();
+
+        assertEq(totalRaisedAfter, totalRaisedBefore + (1000 * 10 ** tokenDecimals));
+    }
+
+    function test_BuyTier4_BuyingTier4EmitsTier4Bought() public {
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 1000 * 10 ** tokenDecimals;
+
+        paymentToken.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+
+        vm.prank(caller);
+        vm.expectEmit(true, false, false, true);
+        emit Tier4Bought(caller, amount);
+
+        talentCommunitySale.buyTier4();
     }
 
     // ..... TODO .....
