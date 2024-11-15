@@ -150,9 +150,11 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals;
+        uint256 amount = 100 * 10 ** tokenDecimals; // 100
 
-        paymentToken.transfer(caller, amount - 1);
+        // I am setting the +caller+ balance to lower than +amount+ by just
+        // 1 cent.
+        paymentToken.transfer(caller, amount - 1); // 99
 
         vm.prank(caller);
         paymentToken.approve(address(talentCommunitySale), amount);
@@ -164,7 +166,9 @@ contract TalentCommunitySaleTest is Test {
     }
 
     function test_BuyTier1_Tier1BoughtIsIncrementedByOne() public {
-        talentCommunitySale.enableSale();
+        // SETUP phase
+        // -----------
+        talentCommunitySale.enableSale(); // satisfies line 56
 
         uint32 tier1BoughtBefore = talentCommunitySale.tier1Bought();
 
@@ -172,14 +176,32 @@ contract TalentCommunitySaleTest is Test {
 
         uint256 amount = 100 * 10 ** tokenDecimals;
 
-        paymentToken.transfer(caller, amount);
-
+        // satisfy line 57, 58, 59, 60
         vm.prank(caller);
         paymentToken.approve(address(talentCommunitySale), amount);
+        //--------------------------------------------------------
+
+        // line 61 is already satisfied because +tier1Bought+ is already 0 < TIER1_MAX_BUYS
+
+        // line 62 is already satisfied because +caller+ has not bought yet, so he is not
+        // in the list of buyers
+
+
+        // satisfies link 63, by setting enough balance for the +caller+, who is the
+        // +msg.sender+ on that line
+        paymentToken.transfer(caller, amount);
+
+
+        // now that requirements are met, we fire test method
+        // FIRE phase
 
         vm.prank(caller);
         talentCommunitySale.buyTier1();
 
+
+        // TEST phase
+
+        // we test whether the method under test did the job well.
         uint32 tier1BoughtAfter = talentCommunitySale.tier1Bought();
 
         assertEq(tier1BoughtAfter, tier1BoughtBefore + 1);
@@ -220,9 +242,11 @@ contract TalentCommunitySaleTest is Test {
         vm.prank(caller);
         paymentToken.approve(address(talentCommunitySale), amount);
 
+        // FIRE phase
         vm.prank(caller);
         talentCommunitySale.buyTier1();
 
+        // TEST
         uint256 totalRaisedAfter = talentCommunitySale.totalRaised();
 
         assertEq(totalRaisedAfter, totalRaisedBefore + (100 * 10 ** tokenDecimals));
