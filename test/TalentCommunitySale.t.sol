@@ -22,9 +22,16 @@ contract TalentCommunitySaleTest is Test {
     event Tier3Bought(address indexed buyer, uint256 amount);
     event Tier4Bought(address indexed buyer, uint256 amount);
 
+    error SaleIsNotActive();
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
+    error ERC20InsufficientAllowance(address spender, uint256 allowance, uint256 needed);
     error OwnableUnauthorizedAccount(address account);
     error ReentrancyGuardReentrantCall();
+    error Tier1SoldOut();
+    error Tier2SoldOut();
+    error Tier3SoldOut();
+    error Tier4SoldOut();
+    error AddressAlreadyBought(address buyer);
 
     function setUp() public {
         talentCommunitySale =
@@ -129,7 +136,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier1_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert("TalentCommunitySale: Sale is not active");
+        vm.expectRevert(SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier1();
     }
@@ -137,7 +144,11 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier1_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() public {
         talentCommunitySale.enableSale();
 
-        vm.expectRevert("TalentCommunitySale: Insufficient allowance");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ERC20InsufficientAllowance.selector, talentCommunitySale, 0, talentCommunitySale.TIER1_AMOUNT()
+            )
+        );
 
         talentCommunitySale.buyTier1();
     }
@@ -165,7 +176,7 @@ contract TalentCommunitySaleTest is Test {
 
             if (i == tier1MaxBuys + 1) {
                 // i is 101
-                vm.expectRevert("TalentCommunitySale: Tier 1 sold out");
+                vm.expectRevert(Tier1SoldOut.selector);
             }
 
             // Panos is asking the contract TaletnCommunitySale to buyAtTier1 100M
@@ -189,7 +200,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == 2) {
-                vm.expectRevert("TalentCommunitySale: Address already bought");
+                vm.expectRevert(abi.encodeWithSelector(AddressAlreadyBought.selector, caller));
             }
             vm.prank(caller);
             talentCommunitySale.buyTier1();
@@ -271,18 +282,15 @@ contract TalentCommunitySaleTest is Test {
         // line 62 is already satisfied because +caller+ has not bought yet, so he is not
         // in the list of buyers
 
-
         // satisfies link 63, by setting enough balance for the +caller+, who is the
         // +msg.sender+ on that line
         paymentToken.transfer(caller, amount);
-
 
         // now that requirements are met, we fire test method
         // FIRE phase
 
         vm.prank(caller);
         talentCommunitySale.buyTier1();
-
 
         // TEST phase
 
@@ -369,7 +377,7 @@ contract TalentCommunitySaleTest is Test {
         paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
 
         vm.prank(caller);
-        vm.expectRevert(abi.encodeWithSelector(ReentrancyGuardReentrantCall.selector));
+        vm.expectRevert(ReentrancyGuardReentrantCall.selector);
         talentCommunitySaleBad.buyTier1();
     }
 
@@ -382,7 +390,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier2_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert("TalentCommunitySale: Sale is not active");
+        vm.expectRevert(SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier2();
     }
@@ -390,7 +398,11 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier2_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() public {
         talentCommunitySale.enableSale();
 
-        vm.expectRevert("TalentCommunitySale: Insufficient allowance");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ERC20InsufficientAllowance.selector, talentCommunitySale, 0, talentCommunitySale.TIER2_AMOUNT()
+            )
+        );
 
         talentCommunitySale.buyTier2();
     }
@@ -409,7 +421,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == tier2MaxBuys + 1) {
-                vm.expectRevert("TalentCommunitySale: Tier 2 sold out");
+                vm.expectRevert(Tier2SoldOut.selector);
             }
 
             vm.prank(caller);
@@ -431,7 +443,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == 2) {
-                vm.expectRevert("TalentCommunitySale: Address already bought");
+                vm.expectRevert(abi.encodeWithSelector(AddressAlreadyBought.selector, caller));
             }
             vm.prank(caller);
             talentCommunitySale.buyTier2();
@@ -469,7 +481,7 @@ contract TalentCommunitySaleTest is Test {
         paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
 
         vm.prank(caller);
-        vm.expectRevert(abi.encodeWithSelector(ReentrancyGuardReentrantCall.selector));
+        vm.expectRevert(ReentrancyGuardReentrantCall.selector);
         talentCommunitySaleBad.buyTier2();
     }
 
@@ -597,7 +609,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier3_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert("TalentCommunitySale: Sale is not active");
+        vm.expectRevert(SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier3();
     }
@@ -605,7 +617,11 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier3_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() public {
         talentCommunitySale.enableSale();
 
-        vm.expectRevert("TalentCommunitySale: Insufficient allowance");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ERC20InsufficientAllowance.selector, talentCommunitySale, 0, talentCommunitySale.TIER3_AMOUNT()
+            )
+        );
 
         talentCommunitySale.buyTier3();
     }
@@ -624,7 +640,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == tier3MaxBuys + 1) {
-                vm.expectRevert("TalentCommunitySale: Tier 3 sold out");
+                vm.expectRevert(Tier3SoldOut.selector);
             }
 
             vm.prank(caller);
@@ -646,7 +662,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == 2) {
-                vm.expectRevert("TalentCommunitySale: Address already bought");
+                vm.expectRevert(abi.encodeWithSelector(AddressAlreadyBought.selector, caller));
             }
             vm.prank(caller);
             talentCommunitySale.buyTier3();
@@ -684,7 +700,7 @@ contract TalentCommunitySaleTest is Test {
         paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
 
         vm.prank(caller);
-        vm.expectRevert(abi.encodeWithSelector(ReentrancyGuardReentrantCall.selector));
+        vm.expectRevert(ReentrancyGuardReentrantCall.selector);
         talentCommunitySaleBad.buyTier3();
     }
 
@@ -812,7 +828,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier4_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert("TalentCommunitySale: Sale is not active");
+        vm.expectRevert(SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier4();
     }
@@ -820,7 +836,11 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier4_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() public {
         talentCommunitySale.enableSale();
 
-        vm.expectRevert("TalentCommunitySale: Insufficient allowance");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ERC20InsufficientAllowance.selector, talentCommunitySale, 0, talentCommunitySale.TIER4_AMOUNT()
+            )
+        );
 
         talentCommunitySale.buyTier4();
     }
@@ -839,7 +859,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == tier4MaxBuys + 1) {
-                vm.expectRevert("TalentCommunitySale: Tier 4 sold out");
+                vm.expectRevert(Tier4SoldOut.selector);
             }
 
             vm.prank(caller);
@@ -861,7 +881,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == 2) {
-                vm.expectRevert("TalentCommunitySale: Address already bought");
+                vm.expectRevert(abi.encodeWithSelector(AddressAlreadyBought.selector, caller));
             }
             vm.prank(caller);
             talentCommunitySale.buyTier4();
@@ -899,7 +919,7 @@ contract TalentCommunitySaleTest is Test {
         paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
 
         vm.prank(caller);
-        vm.expectRevert(abi.encodeWithSelector(ReentrancyGuardReentrantCall.selector));
+        vm.expectRevert(ReentrancyGuardReentrantCall.selector);
         talentCommunitySaleBad.buyTier4();
     }
 

@@ -17,6 +17,11 @@ contract TalentCommunitySale {
     uint32 public constant TIER3_MAX_BUYS = 1250;
     uint32 public constant TIER4_MAX_BUYS = 520;
 
+    uint256 public immutable TIER1_AMOUNT;
+    uint256 public immutable TIER2_AMOUNT;
+    uint256 public immutable TIER3_AMOUNT;
+    uint256 public immutable TIER4_AMOUNT;
+
     uint32 public tier1Bought;
     uint32 public tier2Bought;
     uint32 public tier3Bought;
@@ -39,20 +44,17 @@ contract TalentCommunitySale {
 
     mapping(address => bool) public listOfBuyers;
 
-    /**
-     * @dev The caller account is not authorized to perform an operation.
-     */
+    error SaleIsNotActive();
     error OwnableUnauthorizedAccount(address account);
-
-    /**
-     * @dev The owner is not a valid owner account. (eg. `address(0)`)
-     */
     error OwnableInvalidOwner(address owner);
-
     error ReentrancyGuardReentrantCall();
+    error Tier1SoldOut();
+    error Tier2SoldOut();
+    error Tier3SoldOut();
+    error Tier4SoldOut();
+    error AddressAlreadyBought(address buyer);
 
-    constructor(address initialOwner, address _paymentToken, address _receivingWallet, uint256 _tokenDecimals)
-    {
+    constructor(address initialOwner, address _paymentToken, address _receivingWallet, uint256 _tokenDecimals) {
         owner = initialOwner;
         paymentToken = IERC20(_paymentToken);
         receivingWallet = _receivingWallet;
@@ -60,6 +62,13 @@ contract TalentCommunitySale {
         totalRaised = 0;
         saleActive = false;
         _status = NOT_ENTERED;
+
+        uint256 decimalsTenths = 10 ** tokenDecimals;
+
+        TIER1_AMOUNT = 100 * decimalsTenths;
+        TIER2_AMOUNT = 250 * decimalsTenths;
+        TIER3_AMOUNT = 500 * decimalsTenths;
+        TIER4_AMOUNT = 1000 * decimalsTenths;
     }
 
     function enableSale() external {
@@ -103,19 +112,24 @@ contract TalentCommunitySale {
     function buyTier1() external {
         _nonReentrantBefore();
 
-        require(saleActive, "TalentCommunitySale: Sale is not active");
-        require(
-            paymentToken.allowance(msg.sender, address(this)) >= 100 * 10 ** tokenDecimals,
-            "TalentCommunitySale: Insufficient allowance"
-        );
-        require(tier1Bought < TIER1_MAX_BUYS, "TalentCommunitySale: Tier 1 sold out");
-        require(!listOfBuyers[msg.sender], "TalentCommunitySale: Address already bought");
-        require(paymentToken.transferFrom(msg.sender, receivingWallet, 100 * 10 ** tokenDecimals), "Transfer failed");
+        if (!saleActive) {
+            revert SaleIsNotActive();
+        }
+
+        if (tier1Bought >= TIER1_MAX_BUYS) {
+            revert Tier1SoldOut();
+        }
+
+        if (listOfBuyers[msg.sender]) {
+            revert AddressAlreadyBought(msg.sender);
+        }
+
+        paymentToken.transferFrom(msg.sender, receivingWallet, TIER1_AMOUNT);
 
         tier1Bought++;
         listOfBuyers[msg.sender] = true;
-        totalRaised += 100 * 10 ** tokenDecimals;
-        emit Tier1Bought(msg.sender, 100 * 10 ** tokenDecimals);
+        totalRaised += TIER1_AMOUNT;
+        emit Tier1Bought(msg.sender, TIER1_AMOUNT);
 
         _nonReentrantAfter();
     }
@@ -123,19 +137,24 @@ contract TalentCommunitySale {
     function buyTier2() external {
         _nonReentrantBefore();
 
-        require(saleActive, "TalentCommunitySale: Sale is not active");
-        require(
-            paymentToken.allowance(msg.sender, address(this)) >= 250 * 10 ** tokenDecimals,
-            "TalentCommunitySale: Insufficient allowance"
-        );
-        require(tier2Bought < TIER2_MAX_BUYS, "TalentCommunitySale: Tier 2 sold out");
-        require(!listOfBuyers[msg.sender], "TalentCommunitySale: Address already bought");
-        require(paymentToken.transferFrom(msg.sender, receivingWallet, 250 * 10 ** tokenDecimals), "Transfer failed");
+        if (!saleActive) {
+            revert SaleIsNotActive();
+        }
+
+        if (tier2Bought >= TIER2_MAX_BUYS) {
+            revert Tier2SoldOut();
+        }
+
+        if (listOfBuyers[msg.sender]) {
+            revert AddressAlreadyBought(msg.sender);
+        }
+
+        paymentToken.transferFrom(msg.sender, receivingWallet, TIER2_AMOUNT);
 
         tier2Bought++;
         listOfBuyers[msg.sender] = true;
-        totalRaised += 250 * 10 ** tokenDecimals;
-        emit Tier2Bought(msg.sender, 250 * 10 ** tokenDecimals);
+        totalRaised += TIER2_AMOUNT;
+        emit Tier2Bought(msg.sender, TIER2_AMOUNT);
 
         _nonReentrantAfter();
     }
@@ -143,19 +162,24 @@ contract TalentCommunitySale {
     function buyTier3() external {
         _nonReentrantBefore();
 
-        require(saleActive, "TalentCommunitySale: Sale is not active");
-        require(
-            paymentToken.allowance(msg.sender, address(this)) >= 500 * 10 ** tokenDecimals,
-            "TalentCommunitySale: Insufficient allowance"
-        );
-        require(tier3Bought < TIER3_MAX_BUYS, "TalentCommunitySale: Tier 3 sold out");
-        require(!listOfBuyers[msg.sender], "TalentCommunitySale: Address already bought");
-        require(paymentToken.transferFrom(msg.sender, receivingWallet, 500 * 10 ** tokenDecimals), "Transfer failed");
+        if (!saleActive) {
+            revert SaleIsNotActive();
+        }
+
+        if (tier3Bought >= TIER3_MAX_BUYS) {
+            revert Tier3SoldOut();
+        }
+
+        if (listOfBuyers[msg.sender]) {
+            revert AddressAlreadyBought(msg.sender);
+        }
+
+        paymentToken.transferFrom(msg.sender, receivingWallet, TIER3_AMOUNT);
 
         tier3Bought++;
         listOfBuyers[msg.sender] = true;
-        totalRaised += 500 * 10 ** tokenDecimals;
-        emit Tier3Bought(msg.sender, 500 * 10 ** tokenDecimals);
+        totalRaised += TIER3_AMOUNT;
+        emit Tier3Bought(msg.sender, TIER3_AMOUNT);
 
         _nonReentrantAfter();
     }
@@ -163,19 +187,24 @@ contract TalentCommunitySale {
     function buyTier4() external {
         _nonReentrantBefore();
 
-        require(saleActive, "TalentCommunitySale: Sale is not active");
-        require(
-            paymentToken.allowance(msg.sender, address(this)) >= 1000 * 10 ** tokenDecimals,
-            "TalentCommunitySale: Insufficient allowance"
-        );
-        require(tier4Bought < TIER4_MAX_BUYS, "TalentCommunitySale: Tier 4 sold out");
-        require(!listOfBuyers[msg.sender], "TalentCommunitySale: Address already bought");
-        require(paymentToken.transferFrom(msg.sender, receivingWallet, 1000 * 10 ** tokenDecimals), "Transfer failed");
+        if (!saleActive) {
+            revert SaleIsNotActive();
+        }
+
+        if (tier4Bought >= TIER4_MAX_BUYS) {
+            revert Tier4SoldOut();
+        }
+
+        if (listOfBuyers[msg.sender]) {
+            revert AddressAlreadyBought(msg.sender);
+        }
+
+        paymentToken.transferFrom(msg.sender, receivingWallet, TIER4_AMOUNT);
 
         tier4Bought++;
         listOfBuyers[msg.sender] = true;
-        totalRaised += 1000 * 10 ** tokenDecimals;
-        emit Tier4Bought(msg.sender, 1000 * 10 ** tokenDecimals);
+        totalRaised += TIER4_AMOUNT;
+        emit Tier4Bought(msg.sender, TIER4_AMOUNT);
 
         _nonReentrantAfter();
     }

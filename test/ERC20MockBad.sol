@@ -33,7 +33,7 @@ contract USDTMockBad is ERC20 {
         return 6;
     }
 
-    function transferFrom(address, address, uint256)  public override returns (bool) {
+    function transferFrom(address, address, uint256) public override returns (bool) {
         msg.sender.functionCall(abi.encodeWithSignature("buyTier1()"));
 
         return true;
