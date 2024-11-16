@@ -165,6 +165,35 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
     }
 
+    function test_BuyTier1_ReceivingWalletGetsTheAmount() public {
+        // SETUP phase
+        // -----------
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 100 * 10 ** tokenDecimals;
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+        //--------------------------------------------------------
+
+        paymentToken.transfer(caller, amount);
+
+        uint256 balanceBefore = paymentToken.balanceOf(receivingWallet);
+
+        // now that requirements are met, we fire test method
+        // FIRE phase
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier1();
+
+        // TEST phase
+        uint256 balanceAfter = paymentToken.balanceOf(receivingWallet);
+
+        assertEq(balanceAfter, balanceBefore + amount);
+    }
+
     function test_BuyTier1_Tier1BoughtIsIncrementedByOne() public {
         // SETUP phase
         // -----------
@@ -207,7 +236,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(tier1BoughtAfter, tier1BoughtBefore + 1);
     }
 
-    function test_BuyTier1_Tier1BoughtAddsBuyerToListOfBuyers() public {
+    function test_BuyTier1_AddsBuyerToListOfBuyers() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -228,7 +257,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(talentCommunitySale.listOfBuyers(caller), true);
     }
 
-    function test_BuyTier1_BuyingTier1IncreasesTotalRaisedBy100() public {
+    function test_BuyTier1_IncreasesTotalRaisedBy100() public {
         talentCommunitySale.enableSale();
 
         uint256 totalRaisedBefore = talentCommunitySale.totalRaised();
@@ -252,7 +281,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(totalRaisedAfter, totalRaisedBefore + (100 * 10 ** tokenDecimals));
     }
 
-    function test_BuyTier1_BuyingTier1EmitsTier1Bought() public {
+    function test_BuyTier1_EmitsTier1Bought() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -354,6 +383,35 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier2();
     }
 
+    function test_BuyTier2_ReceivingWalletGetsTheAmount() public {
+        // SETUP phase
+        // -----------
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 250 * 10 ** tokenDecimals;
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+        //--------------------------------------------------------
+
+        paymentToken.transfer(caller, amount);
+
+        uint256 balanceBefore = paymentToken.balanceOf(receivingWallet);
+
+        // now that requirements are met, we fire test method
+        // FIRE phase
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier2();
+
+        // TEST phase
+        uint256 balanceAfter = paymentToken.balanceOf(receivingWallet);
+
+        assertEq(balanceAfter, balanceBefore + amount);
+    }
+
     function test_BuyTier2_Tier2BoughtIsIncrementedByOne() public {
         talentCommunitySale.enableSale();
 
@@ -376,7 +434,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(tier2BoughtAfter, tier2BoughtBefore + 1);
     }
 
-    function test_BuyTier2_Tier2BoughtAddsBuyerToListOfBuyers() public {
+    function test_BuyTier2_AddsBuyerToListOfBuyers() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -397,7 +455,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(talentCommunitySale.listOfBuyers(caller), true);
     }
 
-    function test_BuyTier2_BuyingTier2IncreasesTotalRaisedBy250() public {
+    function test_BuyTier2_IncreasesTotalRaisedBy250() public {
         talentCommunitySale.enableSale();
 
         uint256 totalRaisedBefore = talentCommunitySale.totalRaised();
@@ -419,7 +477,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(totalRaisedAfter, totalRaisedBefore + (250 * 10 ** tokenDecimals));
     }
 
-    function test_BuyTier2_BuyingTier2EmitsTier2Bought() public {
+    function test_BuyTier2_EmitsTier2Bought() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -518,6 +576,35 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier3();
     }
 
+    function test_BuyTier3_ReceivingWalletGetsTheAmount() public {
+        // SETUP phase
+        // -----------
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 500 * 10 ** tokenDecimals;
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+        //--------------------------------------------------------
+
+        paymentToken.transfer(caller, amount);
+
+        uint256 balanceBefore = paymentToken.balanceOf(receivingWallet);
+
+        // now that requirements are met, we fire test method
+        // FIRE phase
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier3();
+
+        // TEST phase
+        uint256 balanceAfter = paymentToken.balanceOf(receivingWallet);
+
+        assertEq(balanceAfter, balanceBefore + amount);
+    }
+
     function test_BuyTier3_Tier3BoughtIsIncrementedByOne() public {
         talentCommunitySale.enableSale();
 
@@ -540,7 +627,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(tier3BoughtAfter, tier3BoughtBefore + 1);
     }
 
-    function test_BuyTier3_Tier3BoughtAddsBuyerToListOfBuyers() public {
+    function test_BuyTier3_AddsBuyerToListOfBuyers() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -561,7 +648,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(talentCommunitySale.listOfBuyers(caller), true);
     }
 
-    function test_BuyTier3_BuyingTier3IncreasesTotalRaisedBy500() public {
+    function test_BuyTier3_IncreasesTotalRaisedBy500() public {
         talentCommunitySale.enableSale();
 
         uint256 totalRaisedBefore = talentCommunitySale.totalRaised();
@@ -583,7 +670,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(totalRaisedAfter, totalRaisedBefore + (500 * 10 ** tokenDecimals));
     }
 
-    function test_BuyTier3_BuyingTier3EmitsTier3Bought() public {
+    function test_BuyTier3_EmitsTier3Bought() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -682,6 +769,35 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier4();
     }
 
+    function test_BuyTier4_ReceivingWalletGetsTheAmount() public {
+        // SETUP phase
+        // -----------
+        talentCommunitySale.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 1000 * 10 ** tokenDecimals;
+
+        vm.prank(caller);
+        paymentToken.approve(address(talentCommunitySale), amount);
+        //--------------------------------------------------------
+
+        paymentToken.transfer(caller, amount);
+
+        uint256 balanceBefore = paymentToken.balanceOf(receivingWallet);
+
+        // now that requirements are met, we fire test method
+        // FIRE phase
+
+        vm.prank(caller);
+        talentCommunitySale.buyTier4();
+
+        // TEST phase
+        uint256 balanceAfter = paymentToken.balanceOf(receivingWallet);
+
+        assertEq(balanceAfter, balanceBefore + amount);
+    }
+
     function test_BuyTier4_Tier4BoughtIsIncrementedByOne() public {
         talentCommunitySale.enableSale();
 
@@ -704,7 +820,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(tier4BoughtAfter, tier4BoughtBefore + 1);
     }
 
-    function test_BuyTier4_Tier4BoughtAddsBuyerToListOfBuyers() public {
+    function test_BuyTier4_AddsBuyerToListOfBuyers() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
@@ -747,7 +863,7 @@ contract TalentCommunitySaleTest is Test {
         assertEq(totalRaisedAfter, totalRaisedBefore + (1000 * 10 ** tokenDecimals));
     }
 
-    function test_BuyTier4_BuyingTier4EmitsTier4Bought() public {
+    function test_BuyTier4_EmitsTier4Bought() public {
         talentCommunitySale.enableSale();
 
         address caller = address(12347);
