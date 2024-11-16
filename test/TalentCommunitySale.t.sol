@@ -20,6 +20,7 @@ contract TalentCommunitySaleTest is Test {
     event Tier4Bought(address indexed buyer, uint256 amount);
 
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
+    error OwnableUnauthorizedAccount(address account);
 
     function setUp() public {
         talentCommunitySale =
@@ -62,6 +63,13 @@ contract TalentCommunitySaleTest is Test {
         assertEq(talentCommunitySale.saleActive(), true);
     }
 
+    function test_EnableSale_OnlyByOwner() public {
+        vm.prank(address(0));
+
+        vm.expectRevert(abi.encodeWithSelector(OwnableUnauthorizedAccount.selector, address(0)));
+        talentCommunitySale.enableSale();
+    }
+
     function test_DisableSale() public {
         talentCommunitySale.enableSale();
 
@@ -70,6 +78,13 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.disableSale();
 
         assertEq(talentCommunitySale.saleActive(), false);
+    }
+
+    function test_DisableSale_OnlyByOwner() public {
+        vm.prank(address(0));
+
+        vm.expectRevert(abi.encodeWithSelector(OwnableUnauthorizedAccount.selector, address(0)));
+        talentCommunitySale.disableSale();
     }
 
     // -----------------------------------------------
