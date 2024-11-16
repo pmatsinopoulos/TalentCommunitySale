@@ -165,7 +165,7 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
     }
 
-    function test_BuyTier1_ReceivingWalletGetsTheAmount() public {
+    function test_BuyTier1_ReceivingWalletGetsTheAmountFromBuyer() public {
         // SETUP phase
         // -----------
         talentCommunitySale.enableSale();
@@ -180,7 +180,8 @@ contract TalentCommunitySaleTest is Test {
 
         paymentToken.transfer(caller, amount);
 
-        uint256 balanceBefore = paymentToken.balanceOf(receivingWallet);
+        uint256 receivingWalletBalanceBefore = paymentToken.balanceOf(receivingWallet);
+        uint256 buyerBalanceBefore = paymentToken.balanceOf(caller);
 
         // now that requirements are met, we fire test method
         // FIRE phase
@@ -189,9 +190,13 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
 
         // TEST phase
-        uint256 balanceAfter = paymentToken.balanceOf(receivingWallet);
+        uint256 receivingWalletBalanceAfter = paymentToken.balanceOf(receivingWallet);
 
-        assertEq(balanceAfter, balanceBefore + amount);
+        assertEq(receivingWalletBalanceAfter, receivingWalletBalanceBefore + amount);
+
+        uint256 buyerBalanceAfter = paymentToken.balanceOf(caller);
+
+        assertEq(buyerBalanceAfter, buyerBalanceBefore - amount);
     }
 
     function test_BuyTier1_Tier1BoughtIsIncrementedByOne() public {
@@ -383,7 +388,7 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier2();
     }
 
-    function test_BuyTier2_ReceivingWalletGetsTheAmount() public {
+    function test_BuyTier2_ReceivingWalletGetsTheAmountFromBuyer() public {
         // SETUP phase
         // -----------
         talentCommunitySale.enableSale();
@@ -398,7 +403,8 @@ contract TalentCommunitySaleTest is Test {
 
         paymentToken.transfer(caller, amount);
 
-        uint256 balanceBefore = paymentToken.balanceOf(receivingWallet);
+        uint256 receivingWalletBalanceBefore = paymentToken.balanceOf(receivingWallet);
+        uint256 buyerBalanceBefore = paymentToken.balanceOf(caller);
 
         // now that requirements are met, we fire test method
         // FIRE phase
@@ -407,9 +413,13 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier2();
 
         // TEST phase
-        uint256 balanceAfter = paymentToken.balanceOf(receivingWallet);
+        uint256 receiveWalletBalanceAfter = paymentToken.balanceOf(receivingWallet);
 
-        assertEq(balanceAfter, balanceBefore + amount);
+        assertEq(receiveWalletBalanceAfter, receivingWalletBalanceBefore + amount);
+
+        uint256 buyerBalanceAfter = paymentToken.balanceOf(caller);
+
+        assertEq(buyerBalanceAfter, buyerBalanceBefore - amount);
     }
 
     function test_BuyTier2_Tier2BoughtIsIncrementedByOne() public {
@@ -576,7 +586,7 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier3();
     }
 
-    function test_BuyTier3_ReceivingWalletGetsTheAmount() public {
+    function test_BuyTier3_ReceivingWalletGetsTheAmountFromBuyer() public {
         // SETUP phase
         // -----------
         talentCommunitySale.enableSale();
@@ -591,7 +601,8 @@ contract TalentCommunitySaleTest is Test {
 
         paymentToken.transfer(caller, amount);
 
-        uint256 balanceBefore = paymentToken.balanceOf(receivingWallet);
+        uint256 receivingWalletBalanceBefore = paymentToken.balanceOf(receivingWallet);
+        uint256 buyerBalanceBefore = paymentToken.balanceOf(caller);
 
         // now that requirements are met, we fire test method
         // FIRE phase
@@ -600,9 +611,13 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier3();
 
         // TEST phase
-        uint256 balanceAfter = paymentToken.balanceOf(receivingWallet);
+        uint256 receiveWalletBalanceAfter = paymentToken.balanceOf(receivingWallet);
 
-        assertEq(balanceAfter, balanceBefore + amount);
+        assertEq(receiveWalletBalanceAfter, receivingWalletBalanceBefore + amount);
+
+        uint256 buyerBalanceAfter = paymentToken.balanceOf(caller);
+
+        assertEq(buyerBalanceAfter, buyerBalanceBefore - amount);
     }
 
     function test_BuyTier3_Tier3BoughtIsIncrementedByOne() public {
@@ -769,7 +784,7 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier4();
     }
 
-    function test_BuyTier4_ReceivingWalletGetsTheAmount() public {
+    function test_BuyTier4_ReceivingWalletGetsTheAmountFromBuyer() public {
         // SETUP phase
         // -----------
         talentCommunitySale.enableSale();
@@ -784,7 +799,8 @@ contract TalentCommunitySaleTest is Test {
 
         paymentToken.transfer(caller, amount);
 
-        uint256 balanceBefore = paymentToken.balanceOf(receivingWallet);
+        uint256 receivingWalletBalanceBefore = paymentToken.balanceOf(receivingWallet);
+        uint256 buyerBalanceBefore = paymentToken.balanceOf(caller);
 
         // now that requirements are met, we fire test method
         // FIRE phase
@@ -793,9 +809,13 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier4();
 
         // TEST phase
-        uint256 balanceAfter = paymentToken.balanceOf(receivingWallet);
+        uint256 receiveWalletBalanceAfter = paymentToken.balanceOf(receivingWallet);
 
-        assertEq(balanceAfter, balanceBefore + amount);
+        assertEq(receiveWalletBalanceAfter, receivingWalletBalanceBefore + amount);
+
+        uint256 buyerBalanceAfter = paymentToken.balanceOf(caller);
+
+        assertEq(buyerBalanceAfter, buyerBalanceBefore - amount);
     }
 
     function test_BuyTier4_Tier4BoughtIsIncrementedByOne() public {
@@ -881,6 +901,4 @@ contract TalentCommunitySaleTest is Test {
 
         talentCommunitySale.buyTier4();
     }
-
-    // ..... TODO .....
 }
