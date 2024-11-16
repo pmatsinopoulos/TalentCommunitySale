@@ -3,9 +3,8 @@ pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract TalentCommunitySale is ReentrancyGuard {
+contract TalentCommunitySale {
     using Math for uint256;
 
     address public owner;
@@ -27,6 +26,11 @@ contract TalentCommunitySale is ReentrancyGuard {
 
     bool public saleActive;
 
+    uint256 private constant NOT_ENTERED = 1;
+    uint256 private constant ENTERED = 2;
+
+    uint256 private _status;
+
     event Tier1Bought(address indexed buyer, uint256 amount);
     event Tier2Bought(address indexed buyer, uint256 amount);
     event Tier3Bought(address indexed buyer, uint256 amount);
@@ -45,6 +49,8 @@ contract TalentCommunitySale is ReentrancyGuard {
      */
     error OwnableInvalidOwner(address owner);
 
+    error ReentrancyGuardReentrantCall();
+
     constructor(address initialOwner, address _paymentToken, address _receivingWallet, uint256 _tokenDecimals)
     {
         owner = initialOwner;
@@ -53,6 +59,7 @@ contract TalentCommunitySale is ReentrancyGuard {
         tokenDecimals = _tokenDecimals;
         totalRaised = 0;
         saleActive = false;
+        _status = NOT_ENTERED;
     }
 
     function enableSale() external {
@@ -93,7 +100,9 @@ contract TalentCommunitySale is ReentrancyGuard {
     }
     // ------------------------------------------------
 
-    function buyTier1() external nonReentrant {
+    function buyTier1() external {
+        _nonReentrantBefore();
+
         require(saleActive, "TalentCommunitySale: Sale is not active");
         require(
             paymentToken.allowance(msg.sender, address(this)) >= 100 * 10 ** tokenDecimals,
@@ -107,9 +116,13 @@ contract TalentCommunitySale is ReentrancyGuard {
         listOfBuyers[msg.sender] = true;
         totalRaised += 100 * 10 ** tokenDecimals;
         emit Tier1Bought(msg.sender, 100 * 10 ** tokenDecimals);
+
+        _nonReentrantAfter();
     }
 
-    function buyTier2() external nonReentrant {
+    function buyTier2() external {
+        _nonReentrantBefore();
+
         require(saleActive, "TalentCommunitySale: Sale is not active");
         require(
             paymentToken.allowance(msg.sender, address(this)) >= 250 * 10 ** tokenDecimals,
@@ -123,9 +136,13 @@ contract TalentCommunitySale is ReentrancyGuard {
         listOfBuyers[msg.sender] = true;
         totalRaised += 250 * 10 ** tokenDecimals;
         emit Tier2Bought(msg.sender, 250 * 10 ** tokenDecimals);
+
+        _nonReentrantAfter();
     }
 
-    function buyTier3() external nonReentrant {
+    function buyTier3() external {
+        _nonReentrantBefore();
+
         require(saleActive, "TalentCommunitySale: Sale is not active");
         require(
             paymentToken.allowance(msg.sender, address(this)) >= 500 * 10 ** tokenDecimals,
@@ -139,9 +156,13 @@ contract TalentCommunitySale is ReentrancyGuard {
         listOfBuyers[msg.sender] = true;
         totalRaised += 500 * 10 ** tokenDecimals;
         emit Tier3Bought(msg.sender, 500 * 10 ** tokenDecimals);
+
+        _nonReentrantAfter();
     }
 
-    function buyTier4() external nonReentrant {
+    function buyTier4() external {
+        _nonReentrantBefore();
+
         require(saleActive, "TalentCommunitySale: Sale is not active");
         require(
             paymentToken.allowance(msg.sender, address(this)) >= 1000 * 10 ** tokenDecimals,
@@ -155,6 +176,8 @@ contract TalentCommunitySale is ReentrancyGuard {
         listOfBuyers[msg.sender] = true;
         totalRaised += 1000 * 10 ** tokenDecimals;
         emit Tier4Bought(msg.sender, 1000 * 10 ** tokenDecimals);
+
+        _nonReentrantAfter();
     }
 
     function onlyOwner() internal view {
@@ -171,5 +194,21 @@ contract TalentCommunitySale is ReentrancyGuard {
         address oldOwner = owner;
         owner = newOwner;
         emit OwnershipTransferred(oldOwner, newOwner);
+    }
+
+    function _nonReentrantBefore() private {
+        // On the first call to nonReentrant, _status will be NOT_ENTERED
+        if (_status == ENTERED) {
+            revert ReentrancyGuardReentrantCall();
+        }
+
+        // Any calls to nonReentrant after this point will fail
+        _status = ENTERED;
+    }
+
+    function _nonReentrantAfter() private {
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = NOT_ENTERED;
     }
 }
