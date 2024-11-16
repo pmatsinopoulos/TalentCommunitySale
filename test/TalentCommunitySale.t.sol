@@ -4,13 +4,16 @@ pragma solidity 0.8.24;
 import {Test, console} from "forge-std/Test.sol";
 import {TalentCommunitySale} from "../src/TalentCommunitySale.sol";
 import {USDTMock} from "./ERC20Mock.sol";
+import {USDTMockBad} from "./ERC20MockBad.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TalentCommunitySaleTest is Test {
     TalentCommunitySale talentCommunitySale;
+    TalentCommunitySale talentCommunitySaleBad;
 
     address initialOwner = address(this);
     IERC20 paymentToken = new USDTMock();
+    IERC20 paymentTokenBad = new USDTMockBad();
     address receivingWallet = address(1337);
     uint256 tokenDecimals = 6;
 
@@ -21,10 +24,13 @@ contract TalentCommunitySaleTest is Test {
 
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
     error OwnableUnauthorizedAccount(address account);
+    error ReentrancyGuardReentrantCall();
 
     function setUp() public {
         talentCommunitySale =
             new TalentCommunitySale(initialOwner, address(paymentToken), receivingWallet, tokenDecimals);
+        talentCommunitySaleBad =
+            new TalentCommunitySale(initialOwner, address(paymentTokenBad), receivingWallet, tokenDecimals);
     }
 
     function test_OwnerIsGivenAsFirstArgument() public view {
@@ -350,6 +356,23 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier1();
     }
 
+    function test_BuyTier1_OnReentrancy_ItReverts() public {
+        talentCommunitySaleBad.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 100 * 10 ** tokenDecimals;
+
+        paymentTokenBad.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
+
+        vm.prank(caller);
+        vm.expectRevert(abi.encodeWithSelector(ReentrancyGuardReentrantCall.selector));
+        talentCommunitySaleBad.buyTier1();
+    }
+
     // end of buyTier1() --------------------------------------
     // --------------------------------------------------------
 
@@ -431,6 +454,23 @@ contract TalentCommunitySaleTest is Test {
         vm.prank(caller);
 
         talentCommunitySale.buyTier2();
+    }
+
+    function test_BuyTier2_OnReentrancy_ItReverts() public {
+        talentCommunitySaleBad.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 250 * 10 ** tokenDecimals;
+
+        paymentTokenBad.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
+
+        vm.prank(caller);
+        vm.expectRevert(abi.encodeWithSelector(ReentrancyGuardReentrantCall.selector));
+        talentCommunitySaleBad.buyTier2();
     }
 
     function test_BuyTier2_ReceivingWalletGetsTheAmountFromBuyer() public {
@@ -631,6 +671,23 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.buyTier3();
     }
 
+    function test_BuyTier3_OnReentrancy_ItReverts() public {
+        talentCommunitySaleBad.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 500 * 10 ** tokenDecimals;
+
+        paymentTokenBad.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
+
+        vm.prank(caller);
+        vm.expectRevert(abi.encodeWithSelector(ReentrancyGuardReentrantCall.selector));
+        talentCommunitySaleBad.buyTier3();
+    }
+
     function test_BuyTier3_ReceivingWalletGetsTheAmountFromBuyer() public {
         // SETUP phase
         // -----------
@@ -827,6 +884,23 @@ contract TalentCommunitySaleTest is Test {
         vm.prank(caller);
 
         talentCommunitySale.buyTier4();
+    }
+
+    function test_BuyTier4_OnReentrancy_ItReverts() public {
+        talentCommunitySaleBad.enableSale();
+
+        address caller = address(12347);
+
+        uint256 amount = 1000 * 10 ** tokenDecimals;
+
+        paymentTokenBad.transfer(caller, amount);
+
+        vm.prank(caller);
+        paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
+
+        vm.prank(caller);
+        vm.expectRevert(abi.encodeWithSelector(ReentrancyGuardReentrantCall.selector));
+        talentCommunitySaleBad.buyTier4();
     }
 
     function test_BuyTier4_ReceivingWalletGetsTheAmountFromBuyer() public {
