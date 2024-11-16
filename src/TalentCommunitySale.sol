@@ -2,13 +2,13 @@
 pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract TalentCommunitySale is Ownable, ReentrancyGuard {
+contract TalentCommunitySale is ReentrancyGuard {
     using Math for uint256;
 
+    address public owner;
     IERC20 public paymentToken;
     uint256 private tokenDecimals;
     address public receivingWallet;
@@ -31,12 +31,23 @@ contract TalentCommunitySale is Ownable, ReentrancyGuard {
     event Tier2Bought(address indexed buyer, uint256 amount);
     event Tier3Bought(address indexed buyer, uint256 amount);
     event Tier4Bought(address indexed buyer, uint256 amount);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     mapping(address => bool) public listOfBuyers;
 
+    /**
+     * @dev The caller account is not authorized to perform an operation.
+     */
+    error OwnableUnauthorizedAccount(address account);
+
+    /**
+     * @dev The owner is not a valid owner account. (eg. `address(0)`)
+     */
+    error OwnableInvalidOwner(address owner);
+
     constructor(address initialOwner, address _paymentToken, address _receivingWallet, uint256 _tokenDecimals)
-        Ownable(initialOwner)
     {
+        owner = initialOwner;
         paymentToken = IERC20(_paymentToken);
         receivingWallet = _receivingWallet;
         tokenDecimals = _tokenDecimals;
@@ -44,13 +55,43 @@ contract TalentCommunitySale is Ownable, ReentrancyGuard {
         saleActive = false;
     }
 
-    function enableSale() external onlyOwner {
+    function enableSale() external {
+        onlyOwner();
         saleActive = true;
     }
 
-    function disableSale() external onlyOwner {
+    function disableSale() external {
+        onlyOwner();
         saleActive = false;
     }
+
+    // ---------
+    // Ownership
+    // ---------
+    /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions. Can only be called by the current owner.
+     *
+     * NOTE: Renouncing ownership will leave the contract without an owner,
+     * thereby disabling any functionality that is only available to the owner.
+     */
+    function renounceOwnership() public {
+        onlyOwner();
+        _transferOwnership(address(0));
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) public {
+        onlyOwner();
+        if (newOwner == address(0)) {
+            revert OwnableInvalidOwner(address(0));
+        }
+        _transferOwnership(newOwner);
+    }
+    // ------------------------------------------------
 
     function buyTier1() external nonReentrant {
         require(saleActive, "TalentCommunitySale: Sale is not active");
@@ -114,5 +155,21 @@ contract TalentCommunitySale is Ownable, ReentrancyGuard {
         listOfBuyers[msg.sender] = true;
         totalRaised += 1000 * 10 ** tokenDecimals;
         emit Tier4Bought(msg.sender, 1000 * 10 ** tokenDecimals);
+    }
+
+    function onlyOwner() internal view {
+        if (msg.sender != owner) {
+            revert OwnableUnauthorizedAccount(msg.sender);
+        }
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Internal function without access restriction.
+     */
+    function _transferOwnership(address newOwner) internal virtual {
+        address oldOwner = owner;
+        owner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
     }
 }

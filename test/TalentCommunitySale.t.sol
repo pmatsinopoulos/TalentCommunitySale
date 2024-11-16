@@ -87,6 +87,36 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.disableSale();
     }
 
+    // ---------- Ownership --------------------------
+    function test_RenounceOwnerhip_OnlyOwner() public {
+        vm.prank(address(0));
+
+        vm.expectRevert(abi.encodeWithSelector(OwnableUnauthorizedAccount.selector, address(0)));
+        talentCommunitySale.renounceOwnership();
+    }
+
+    function test_RenounceOwnership_TransfersOwnershipToAddressZero() public {
+        talentCommunitySale.renounceOwnership();
+
+        assertEq(talentCommunitySale.owner(), address(0));
+    }
+
+    function test_TransferOwnership_OnlyOwner() public {
+        vm.prank(address(0));
+
+        vm.expectRevert(abi.encodeWithSelector(OwnableUnauthorizedAccount.selector, address(0)));
+        address newOwner = address(9994939);
+        talentCommunitySale.transferOwnership(newOwner);
+    }
+
+    function test_TransferOwnership_TransfersOwnershipToNewOwner() public {
+        address newOwner = address(9994939);
+        talentCommunitySale.transferOwnership(newOwner);
+
+        assertEq(talentCommunitySale.owner(), newOwner);
+    }
+    // --- end of Ownership --------------------------
+
     // -----------------------------------------------
     // buyTier1() ------------------------------------
 
