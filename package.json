@@ -1,0 +1,8 @@
+{
+  "name": "TalentCommunitySale",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:pmatsinopoulos/TalentCommunitySale.git",
+  "author": "Panos Matsinopoulos <panagiotis@matsinopoulos.gr>",
+  "license": "MIT"
+}
