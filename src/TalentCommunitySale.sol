@@ -178,7 +178,7 @@ contract TalentCommunitySale {
                 let freeMemoryPointer := mload(0x40)
                 let initialFreeMemoryPointer := freeMemoryPointer
 
-                mstore(freeMemoryPointer, shl(mul(28,8), 0x118cdaa7))
+                mstore(freeMemoryPointer, shl(mul(28, 8), 0x118cdaa7))
                 freeMemoryPointer := add(freeMemoryPointer, 4)
 
                 mstore(freeMemoryPointer, caller())
