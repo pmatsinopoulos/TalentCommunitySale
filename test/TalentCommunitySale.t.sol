@@ -23,7 +23,6 @@ contract TalentCommunitySaleTest is Test {
     event Tier4Bought(address indexed buyer, uint256 amount);
     event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);
 
-    error SaleIsNotActive();
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
     error ERC20InsufficientAllowance(address spender, uint256 allowance, uint256 needed);
     error OwnableUnauthorizedAccount(address account);
@@ -139,8 +138,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier1_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert(SaleIsNotActive.selector);
-
+        vm.expectRevert(TalentCommunitySale.SaleIsNotActive.selector);
         talentCommunitySale.buyTier1();
     }
 
@@ -395,7 +393,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier2_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert(SaleIsNotActive.selector);
+        vm.expectRevert(TalentCommunitySale.SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier2();
     }
@@ -616,7 +614,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier3_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert(SaleIsNotActive.selector);
+        vm.expectRevert(TalentCommunitySale.SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier3();
     }
@@ -837,7 +835,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier4_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert(SaleIsNotActive.selector);
+        vm.expectRevert(TalentCommunitySale.SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier4();
     }
