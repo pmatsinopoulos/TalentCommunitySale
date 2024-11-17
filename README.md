@@ -173,11 +173,109 @@ On production we can see that:
 
 ## After Optimization
 
-### First Round Optimization
+### Optimizations We Did
 
+We are listing here the optimizations we did in the order applied:
 
+1. Removed dependency to Ownable and ReentrancyGuard.
+1. Removed dependency to Math.
+1. Removed `require` calls and converted to condition checks and `revert` statements with custom errors.
+1. Reorganized the storage state properties to use 2 slots less.
+1. Big portion of the function has been implemented in Yul.
 
+| src/TalentCommunitySale.sol:TalentCommunitySale contract |                 |       |        |        |         |
+|----------------------------------------------------------|-----------------|-------|--------|--------|---------|
+| Deployment Cost                                          | Deployment Size |       |        |        |         |
+| 692277                                                   | 3292            |       |        |        |         |
+| Function Name                                            | min             | avg   | median | max    | # calls |
+| TIER1_AMOUNT                                             | 240             | 240   | 240    | 240    | 1       |
+| TIER1_MAX_BUYS                                           | 261             | 261   | 261    | 261    | 1       |
+| TIER2_AMOUNT                                             | 240             | 240   | 240    | 240    | 1       |
+| TIER2_MAX_BUYS                                           | 261             | 261   | 261    | 261    | 1       |
+| TIER3_AMOUNT                                             | 261             | 261   | 261    | 261    | 1       |
+| TIER3_MAX_BUYS                                           | 283             | 283   | 283    | 283    | 1       |
+| TIER4_AMOUNT                                             | 239             | 239   | 239    | 239    | 1       |
+| TIER4_MAX_BUYS                                           | 239             | 239   | 239    | 239    | 1       |
+| buyTier1                                                 | 26574           | 72283 | 72160  | 106360 | 112     |
+| buyTier2                                                 | 26595           | 72204 | 72181  | 106381 | 592     |
+| buyTier3                                                 | 26597           | 72193 | 72183  | 106383 | 1262    |
+| buyTier4                                                 | 26617           | 72221 | 72203  | 106403 | 532     |
+| disableSale                                              | 23463           | 25742 | 25638  | 28438  | 6       |
+| enableSale                                               | 23461           | 28326 | 28442  | 28442  | 43      |
+| listOfBuyers                                             | 563             | 1563  | 1563   | 2563   | 8       |
+| owner                                                    | 383             | 1049  | 383    | 2383   | 3       |
+| paymentToken                                             | 2383            | 2383  | 2383   | 2383   | 1       |
+| receivingWallet                                          | 2426            | 2426  | 2426   | 2426   | 1       |
+| renounceOwnership                                        | 23176           | 23318 | 23318  | 23461  | 2       |
+| saleActive                                               | 411             | 911   | 411    | 2411   | 4       |
+| tier1Bought                                              | 402             | 1735  | 2402   | 2402   | 3       |
+| tier2Bought                                              | 423             | 1423  | 1423   | 2423   | 2       |
+| tier3Bought                                              | 403             | 1403  | 1403   | 2403   | 2       |
+| tier4Bought                                              | 349             | 349   | 349    | 349    | 2       |
+| totalRaised                                              | 340             | 1540  | 2340   | 2340   | 10      |
+| transferOwnership                                        | 23769           | 26803 | 28321  | 28321  | 3       |
 
+The `.gas-snapshot`
+
+TalentCommunitySaleTest:testTier1WithinLimit() (gas: 10685)
+TalentCommunitySaleTest:test_BuyTier1_AddsBuyerToListOfBuyers() (gas: 126430)
+TalentCommunitySaleTest:test_BuyTier1_EmitsTier1Bought() (gas: 125469)
+TalentCommunitySaleTest:test_BuyTier1_IncreasesTotalRaisedBy100() (gas: 126193)
+TalentCommunitySaleTest:test_BuyTier1_OnReentrancy_ItReverts() (gas: 89275)
+TalentCommunitySaleTest:test_BuyTier1_ReceivingWalletGetsTheAmountFromBuyer() (gas: 129960)
+TalentCommunitySaleTest:test_BuyTier1_Tier1BoughtIsIncrementedByOne() (gas: 125976)
+TalentCommunitySaleTest:test_BuyTier1_WhenCallerDoesNotHaveEnoughBalance_ItReverts() (gas: 90071)
+TalentCommunitySaleTest:test_BuyTier1_WhenCallerHasAlreadyBought_ItReverts() (gas: 171038)
+TalentCommunitySaleTest:test_BuyTier1_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() (gas: 30617)
+TalentCommunitySaleTest:test_BuyTier1_WhenTier1BoughtIsGreaterThanTIER1_MAX_BUYS_ItReverts() (gas: 6791667)
+TalentCommunitySaleTest:test_BuyTier1_whenSaleIsNotActiveItReverts() (gas: 16796)
+TalentCommunitySaleTest:test_BuyTier2_AddsBuyerToListOfBuyers() (gas: 126430)
+TalentCommunitySaleTest:test_BuyTier2_EmitsTier2Bought() (gas: 125504)
+TalentCommunitySaleTest:test_BuyTier2_IncreasesTotalRaisedBy250() (gas: 126209)
+TalentCommunitySaleTest:test_BuyTier2_OnReentrancy_ItReverts() (gas: 89297)
+TalentCommunitySaleTest:test_BuyTier2_ReceivingWalletGetsTheAmountFromBuyer() (gas: 129996)
+TalentCommunitySaleTest:test_BuyTier2_Tier2BoughtIsIncrementedByOne() (gas: 126059)
+TalentCommunitySaleTest:test_BuyTier2_WhenCallerDoesNotHaveEnoughBalance_ItReverts() (gas: 90048)
+TalentCommunitySaleTest:test_BuyTier2_WhenCallerHasAlreadyBought_ItReverts() (gas: 171102)
+TalentCommunitySaleTest:test_BuyTier2_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() (gas: 30661)
+TalentCommunitySaleTest:test_BuyTier2_WhenTier2BoughtIsGreaterThanTIER2_MAX_BUYS_ItReverts() (gas: 38918982)
+TalentCommunitySaleTest:test_BuyTier2_whenSaleIsNotActiveItReverts() (gas: 16805)
+TalentCommunitySaleTest:test_BuyTier3_AddsBuyerToListOfBuyers() (gas: 126449)
+TalentCommunitySaleTest:test_BuyTier3_EmitsTier3Bought() (gas: 125524)
+TalentCommunitySaleTest:test_BuyTier3_IncreasesTotalRaisedBy500() (gas: 126246)
+TalentCommunitySaleTest:test_BuyTier3_OnReentrancy_ItReverts() (gas: 89276)
+TalentCommunitySaleTest:test_BuyTier3_ReceivingWalletGetsTheAmountFromBuyer() (gas: 129980)
+TalentCommunitySaleTest:test_BuyTier3_Tier3BoughtIsIncrementedByOne() (gas: 125976)
+TalentCommunitySaleTest:test_BuyTier3_WhenCallerDoesNotHaveEnoughBalance_ItReverts() (gas: 90051)
+TalentCommunitySaleTest:test_BuyTier3_WhenCallerHasAlreadyBought_ItReverts() (gas: 171083)
+TalentCommunitySaleTest:test_BuyTier3_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() (gas: 30663)
+TalentCommunitySaleTest:test_BuyTier3_WhenTier3BoughtIsGreaterThanTIER3_MAX_BUYS_ItReverts() (gas: 83782252)
+TalentCommunitySaleTest:test_BuyTier3_whenSaleIsNotActiveItReverts() (gas: 16873)
+TalentCommunitySaleTest:test_BuyTier4_AddsBuyerToListOfBuyers() (gas: 124182)
+TalentCommunitySaleTest:test_BuyTier4_BuyingTier4IncreasesTotalRaisedBy1000() (gas: 124020)
+TalentCommunitySaleTest:test_BuyTier4_EmitsTier4Bought() (gas: 123300)
+TalentCommunitySaleTest:test_BuyTier4_OnReentrancy_ItReverts() (gas: 89299)
+TalentCommunitySaleTest:test_BuyTier4_ReceivingWalletGetsTheAmountFromBuyer() (gas: 127755)
+TalentCommunitySaleTest:test_BuyTier4_Tier4BoughtIsIncrementedByOne() (gas: 123683)
+TalentCommunitySaleTest:test_BuyTier4_WhenCallerDoesNotHaveEnoughBalance_ItReverts() (gas: 90136)
+TalentCommunitySaleTest:test_BuyTier4_WhenCallerHasAlreadyBought_ItReverts() (gas: 168347)
+TalentCommunitySaleTest:test_BuyTier4_WhenCallerHasNotAllowedContractToSpendMoney_ItReverts() (gas: 30638)
+TalentCommunitySaleTest:test_BuyTier4_WhenTier4BoughtIsGreaterThanTIER4_MAX_BUYS_ItReverts() (gas: 34909565)
+TalentCommunitySaleTest:test_BuyTier4_whenSaleIsNotActiveItReverts() (gas: 16872)
+TalentCommunitySaleTest:test_DisableSale() (gas: 16358)
+TalentCommunitySaleTest:test_DisableSale_OnlyByOwner() (gas: 11459)
+TalentCommunitySaleTest:test_EnableSale() (gas: 18019)
+TalentCommunitySaleTest:test_EnableSale_OnlyByOwner() (gas: 11435)
+TalentCommunitySaleTest:test_InitialTotalRaisedIsZero() (gas: 10596)
+TalentCommunitySaleTest:test_OwnerIsGivenAsFirstArgument() (gas: 12815)
+TalentCommunitySaleTest:test_PaymentTokenIsGivenAsArgument() (gas: 12858)
+TalentCommunitySaleTest:test_ReceivingWalletReturnsTheWalletWeDeployedWith() (gas: 12878)
+TalentCommunitySaleTest:test_RenounceOwnerhip_OnlyOwner() (gas: 11433)
+TalentCommunitySaleTest:test_RenounceOwnership_TransfersOwnershipToAddressZero() (gas: 11331)
+TalentCommunitySaleTest:test_TotalRaisedUpdatesCorrectly() (gas: 10575)
+TalentCommunitySaleTest:test_TransferOwnership_EmitsEventForTransferOwnership() (gas: 16813)
+TalentCommunitySaleTest:test_TransferOwnership_OnlyOwner() (gas: 11577)
+TalentCommunitySaleTest:test_TransferOwnership_TransfersOwnershipToNewOwner() (gas: 16294)
 
 ## General Instructions on Foundry
 
