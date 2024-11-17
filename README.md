@@ -19,6 +19,10 @@ First we implemented a full test coverage using Foundry Tests:
 |-----------------------------|-----------------|-----------------|----------------|---------------|
 | src/TalentCommunitySale.sol | 100.00% (43/43) | 100.00% (43/43) | 90.00% (36/40) | 100.00% (7/7) |
 
+**Important:** We had to write tests to cover for `Ownable` and for `ReentrancyGuard`. This is necessary
+because inheriting from these contracts is an implementation detail. We want to test cover their functionality
+in case we want to replace these abstract contracts with our own implementation.
+
 ### Storage Layout Optimization
 
 #### Before Any Optimization
@@ -168,6 +172,10 @@ On production we can see that:
 ...
 
 ## After Optimization
+
+### First Round Optimization
+
+
 
 
 
