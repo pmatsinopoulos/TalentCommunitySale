@@ -21,6 +21,7 @@ contract TalentCommunitySaleTest is Test {
     event Tier2Bought(address indexed buyer, uint256 amount);
     event Tier3Bought(address indexed buyer, uint256 amount);
     event Tier4Bought(address indexed buyer, uint256 amount);
+    event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);
 
     error SaleIsNotActive();
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
@@ -121,6 +122,14 @@ contract TalentCommunitySaleTest is Test {
         talentCommunitySale.transferOwnership(newOwner);
 
         assertEq(talentCommunitySale.owner(), newOwner);
+    }
+
+    function test_TransferOwnership_EmitsEventForTransferOwnership() public {
+        address newOwner = address(9994939);
+
+        vm.expectEmit(true, true, false, false);
+        emit OwnershipTransferred(address(this), newOwner);
+        talentCommunitySale.transferOwnership(newOwner);
     }
     // --- end of Ownership --------------------------
 

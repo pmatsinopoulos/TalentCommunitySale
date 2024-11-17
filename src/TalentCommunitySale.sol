@@ -231,10 +231,15 @@ contract TalentCommunitySale {
      * @dev Transfers ownership of the contract to a new account (`newOwner`).
      * Internal function without access restriction.
      */
-    function _transferOwnership(address newOwner) internal virtual {
-        address oldOwner = owner;
-        owner = newOwner;
-        emit OwnershipTransferred(oldOwner, newOwner);
+    function _transferOwnership(address newOwner) internal {
+        assembly {
+            let oldOwner := sload(3)
+
+            sstore(3, newOwner)
+            // 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0
+            // it is taken from forge inspect --pretty TalentCommunitySale events
+            log3(0x00, 0x00, 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0, oldOwner, newOwner)
+        }
     }
 
     function _nonReentrantBefore() private {
