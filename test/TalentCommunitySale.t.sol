@@ -21,17 +21,11 @@ contract TalentCommunitySaleTest is Test {
     event Tier2Bought(address indexed buyer, uint256 amount);
     event Tier3Bought(address indexed buyer, uint256 amount);
     event Tier4Bought(address indexed buyer, uint256 amount);
+    event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);
 
-    error SaleIsNotActive();
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
     error ERC20InsufficientAllowance(address spender, uint256 allowance, uint256 needed);
     error OwnableUnauthorizedAccount(address account);
-    error ReentrancyGuardReentrantCall();
-    error Tier1SoldOut();
-    error Tier2SoldOut();
-    error Tier3SoldOut();
-    error Tier4SoldOut();
-    error AddressAlreadyBought(address buyer);
 
     function setUp() public {
         talentCommunitySale =
@@ -128,6 +122,14 @@ contract TalentCommunitySaleTest is Test {
 
         assertEq(talentCommunitySale.owner(), newOwner);
     }
+
+    function test_TransferOwnership_EmitsEventForTransferOwnership() public {
+        address newOwner = address(9994939);
+
+        vm.expectEmit(true, true, false, false);
+        emit OwnershipTransferred(address(this), newOwner);
+        talentCommunitySale.transferOwnership(newOwner);
+    }
     // --- end of Ownership --------------------------
 
     // -----------------------------------------------
@@ -136,8 +138,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier1_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert(SaleIsNotActive.selector);
-
+        vm.expectRevert(TalentCommunitySale.SaleIsNotActive.selector);
         talentCommunitySale.buyTier1();
     }
 
@@ -176,7 +177,7 @@ contract TalentCommunitySaleTest is Test {
 
             if (i == tier1MaxBuys + 1) {
                 // i is 101
-                vm.expectRevert(Tier1SoldOut.selector);
+                vm.expectRevert(TalentCommunitySale.Tier1SoldOut.selector);
             }
 
             // Panos is asking the contract TaletnCommunitySale to buyAtTier1 100M
@@ -200,7 +201,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == 2) {
-                vm.expectRevert(abi.encodeWithSelector(AddressAlreadyBought.selector, caller));
+                vm.expectRevert(abi.encodeWithSelector(TalentCommunitySale.AddressAlreadyBought.selector, caller));
             }
             vm.prank(caller);
             talentCommunitySale.buyTier1();
@@ -377,8 +378,10 @@ contract TalentCommunitySaleTest is Test {
         paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
 
         vm.prank(caller);
-        vm.expectRevert(ReentrancyGuardReentrantCall.selector);
-        talentCommunitySaleBad.buyTier1();
+        try talentCommunitySaleBad.buyTier1() {}
+        catch (bytes memory err) {
+            assertEq(bytes4(err), TalentCommunitySale.ReentrancyGuardReentrantCall.selector);
+        }
     }
 
     // end of buyTier1() --------------------------------------
@@ -390,7 +393,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier2_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert(SaleIsNotActive.selector);
+        vm.expectRevert(TalentCommunitySale.SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier2();
     }
@@ -421,7 +424,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == tier2MaxBuys + 1) {
-                vm.expectRevert(Tier2SoldOut.selector);
+                vm.expectRevert(TalentCommunitySale.Tier2SoldOut.selector);
             }
 
             vm.prank(caller);
@@ -443,7 +446,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == 2) {
-                vm.expectRevert(abi.encodeWithSelector(AddressAlreadyBought.selector, caller));
+                vm.expectRevert(abi.encodeWithSelector(TalentCommunitySale.AddressAlreadyBought.selector, caller));
             }
             vm.prank(caller);
             talentCommunitySale.buyTier2();
@@ -481,8 +484,10 @@ contract TalentCommunitySaleTest is Test {
         paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
 
         vm.prank(caller);
-        vm.expectRevert(ReentrancyGuardReentrantCall.selector);
-        talentCommunitySaleBad.buyTier2();
+        try talentCommunitySaleBad.buyTier2() {}
+        catch (bytes memory err) {
+            assertEq(bytes4(err), TalentCommunitySale.ReentrancyGuardReentrantCall.selector);
+        }
     }
 
     function test_BuyTier2_ReceivingWalletGetsTheAmountFromBuyer() public {
@@ -609,7 +614,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier3_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert(SaleIsNotActive.selector);
+        vm.expectRevert(TalentCommunitySale.SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier3();
     }
@@ -640,7 +645,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == tier3MaxBuys + 1) {
-                vm.expectRevert(Tier3SoldOut.selector);
+                vm.expectRevert(TalentCommunitySale.Tier3SoldOut.selector);
             }
 
             vm.prank(caller);
@@ -662,7 +667,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == 2) {
-                vm.expectRevert(abi.encodeWithSelector(AddressAlreadyBought.selector, caller));
+                vm.expectRevert(abi.encodeWithSelector(TalentCommunitySale.AddressAlreadyBought.selector, caller));
             }
             vm.prank(caller);
             talentCommunitySale.buyTier3();
@@ -700,8 +705,10 @@ contract TalentCommunitySaleTest is Test {
         paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
 
         vm.prank(caller);
-        vm.expectRevert(ReentrancyGuardReentrantCall.selector);
-        talentCommunitySaleBad.buyTier3();
+        try talentCommunitySaleBad.buyTier3() {}
+        catch (bytes memory err) {
+            assertEq(bytes4(err), TalentCommunitySale.ReentrancyGuardReentrantCall.selector);
+        }
     }
 
     function test_BuyTier3_ReceivingWalletGetsTheAmountFromBuyer() public {
@@ -828,7 +835,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier4_whenSaleIsNotActiveItReverts() public {
         talentCommunitySale.disableSale();
 
-        vm.expectRevert(SaleIsNotActive.selector);
+        vm.expectRevert(TalentCommunitySale.SaleIsNotActive.selector);
 
         talentCommunitySale.buyTier4();
     }
@@ -859,7 +866,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == tier4MaxBuys + 1) {
-                vm.expectRevert(Tier4SoldOut.selector);
+                vm.expectRevert(TalentCommunitySale.Tier4SoldOut.selector);
             }
 
             vm.prank(caller);
@@ -881,7 +888,7 @@ contract TalentCommunitySaleTest is Test {
             paymentToken.approve(address(talentCommunitySale), amount);
 
             if (i == 2) {
-                vm.expectRevert(abi.encodeWithSelector(AddressAlreadyBought.selector, caller));
+                vm.expectRevert(abi.encodeWithSelector(TalentCommunitySale.AddressAlreadyBought.selector, caller));
             }
             vm.prank(caller);
             talentCommunitySale.buyTier4();
@@ -919,8 +926,10 @@ contract TalentCommunitySaleTest is Test {
         paymentTokenBad.approve(address(talentCommunitySaleBad), amount);
 
         vm.prank(caller);
-        vm.expectRevert(ReentrancyGuardReentrantCall.selector);
-        talentCommunitySaleBad.buyTier4();
+        try talentCommunitySaleBad.buyTier4() {}
+        catch (bytes memory err) {
+            assertEq(bytes4(err), TalentCommunitySale.ReentrancyGuardReentrantCall.selector);
+        }
     }
 
     function test_BuyTier4_ReceivingWalletGetsTheAmountFromBuyer() public {
