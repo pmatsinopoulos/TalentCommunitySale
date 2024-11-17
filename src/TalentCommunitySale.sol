@@ -216,8 +216,14 @@ contract TalentCommunitySale {
     }
 
     function onlyOwner() internal view {
-        if (msg.sender != owner) {
-            revert OwnableUnauthorizedAccount(msg.sender);
+        assembly {
+            let storedOwner := sload(3)
+
+            if iszero(eq(caller(), storedOwner)) {
+                mstore(0x00, 0x118cdaa700000000000000000000000000000000000000000000000000000000)
+                mstore(0x20, caller())
+                revert(0x00, 0x24)
+            }
         }
     }
 
