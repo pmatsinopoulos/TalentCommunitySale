@@ -4,9 +4,12 @@ pragma solidity 0.8.24;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TalentCommunitySale {
+    uint256 private tokenDecimals;
+    uint256 public totalRaised;
+    mapping(address => bool) public listOfBuyers;
+
     address public owner;
     IERC20 public paymentToken;
-    uint256 private tokenDecimals;
     address public receivingWallet;
 
     uint32 public constant TIER1_MAX_BUYS = 100;
@@ -24,22 +27,18 @@ contract TalentCommunitySale {
     uint32 public tier3Bought;
     uint32 public tier4Bought;
 
-    uint256 public totalRaised;
-
     bool public saleActive;
 
-    uint256 private constant NOT_ENTERED = 1;
-    uint256 private constant ENTERED = 2;
+    uint8 private constant NOT_ENTERED = 1;
+    uint8 private constant ENTERED = 2;
 
-    uint256 private _status;
+    uint8 private _status;
 
     event Tier1Bought(address indexed buyer, uint256 amount);
     event Tier2Bought(address indexed buyer, uint256 amount);
     event Tier3Bought(address indexed buyer, uint256 amount);
     event Tier4Bought(address indexed buyer, uint256 amount);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-    mapping(address => bool) public listOfBuyers;
 
     error SaleIsNotActive();
     error OwnableUnauthorizedAccount(address account);
