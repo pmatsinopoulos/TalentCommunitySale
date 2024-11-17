@@ -2,11 +2,8 @@
 pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract TalentCommunitySale {
-    using Math for uint256;
-
     address public owner;
     IERC20 public paymentToken;
     uint256 private tokenDecimals;
