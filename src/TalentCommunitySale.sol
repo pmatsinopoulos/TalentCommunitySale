@@ -69,12 +69,21 @@ contract TalentCommunitySale {
 
     function enableSale() external {
         onlyOwner();
-        saleActive = true;
+        assembly {
+            let slot6 := sload(6)
+            let zeroMask := 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFF
+            let setMask  := 0x0000000000000000000000000000000000000000000000000000000100000000
+            sstore(6, or(and(slot6, zeroMask), setMask))
+        }
     }
 
     function disableSale() external {
         onlyOwner();
-        saleActive = false;
+        assembly {
+            let slot6 := sload(6)
+            let zeroMask := 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFF
+            sstore(6, and(slot6, zeroMask))
+        }
     }
 
     // ---------
