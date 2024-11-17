@@ -72,7 +72,7 @@ contract TalentCommunitySale {
         assembly {
             let slot6 := sload(6)
             let zeroMask := 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFF
-            let setMask  := 0x0000000000000000000000000000000000000000000000000000000100000000
+            let setMask := 0x0000000000000000000000000000000000000000000000000000000100000000
             sstore(6, or(and(slot6, zeroMask), setMask))
         }
     }
@@ -82,7 +82,8 @@ contract TalentCommunitySale {
         assembly {
             let slot6 := sload(6)
             let zeroMask := 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFF
-            sstore(6, and(slot6, zeroMask))
+            let setMask  := 0x0000000000000000000000000000000000000000000000000000000000000000
+            sstore(6, or(and(slot6, zeroMask), setMask))
         }
     }
 
@@ -231,18 +232,29 @@ contract TalentCommunitySale {
     }
 
     function _nonReentrantBefore() private {
-        // On the first call to nonReentrant, _status will be NOT_ENTERED
-        if (_status == ENTERED) {
-            revert ReentrancyGuardReentrantCall();
-        }
+        assembly {
+            let slot6 := sload(6)
+            let entered := 0x0000000000000000000000000000000000000000000000000000020000000000 // ENTERED
 
-        // Any calls to nonReentrant after this point will fail
-        _status = ENTERED;
+            if eq(and(slot6, entered), entered) {
+                mstore(0x00, 0x3ee5aeb500000000000000000000000000000000000000000000000000000000) // ReentrancyGuardReentrantCall()
+                revert(0x00, 0x20)
+            }
+
+            let zeroMask := 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFFFF
+            sstore(6, or(and(slot6, zeroMask), entered))
+        }
     }
 
     function _nonReentrantAfter() private {
-        // By storing the original value once again, a refund is triggered (see
-        // https://eips.ethereum.org/EIPS/eip-2200)
-        _status = NOT_ENTERED;
+        assembly {
+            let slot6 := sload(6)
+                              //3130292827262524232221201918171615141312111009080706050403020100
+            let notEntered := 0x0000000000000000000000000000000000000000000000000000010000000000 // NOT_ENTERED
+
+            let setToZeroMask := 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFFFF
+
+            sstore(6, or(and(slot6, setToZeroMask), notEntered))
+        }
     }
 }
