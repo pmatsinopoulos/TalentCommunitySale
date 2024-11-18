@@ -45,7 +45,20 @@ forge inspect --pretty src/TalentCommunitySale.sol:TalentCommunitySale storageLa
 
 #### After Optimization
 
-... to be provided ...
+| Name            | Type                     | Slot | Offset | Bytes | Contract                                        |
+|-----------------|--------------------------|------|--------|-------|-------------------------------------------------|
+| tokenDecimals   | uint256                  | 0    | 0      | 32    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| totalRaised     | uint256                  | 1    | 0      | 32    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| listOfBuyers    | mapping(address => bool) | 2    | 0      | 32    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| owner           | address                  | 3    | 0      | 20    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| paymentToken    | contract IERC20          | 4    | 0      | 20    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| receivingWallet | address                  | 5    | 0      | 20    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| tier1Bought     | uint32                   | 5    | 20     | 4     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| tier2Bought     | uint32                   | 5    | 24     | 4     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| tier3Bought     | uint32                   | 5    | 28     | 4     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| tier4Bought     | uint32                   | 6    | 0      | 4     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| saleActive      | bool                     | 6    | 4      | 1     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| _status         | uint8                    | 6    | 5      | 1     | src/TalentCommunitySale.sol:TalentCommunitySale |
 
 ### Gas Optimization
 
@@ -343,3 +356,65 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+
+# Deployment
+
+## Anvil Locally
+
+1st deploy the USDTMock:
+
+```
+forge script --rpc-url 127.0.0.1:8545 script/DeployTalentCommunitySale.s.sol:DeployUSDTMock --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+which deployed on address : 0x5FbDB2315678afecb367f032d93F642f64180aa3
+
+2nd deploy the contract:
+
+```
+forge script --rpc-url 127.0.0.1:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 0x5FbDB2315678afecb367f032d93F642f64180aa3 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 6 --sig 'run(address,address,address,uint256)'
+```
+
+which deployed on address : 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+
+
+Then we enable the sale on the contract:
+
+```
+forge script --rpc-url 127.0.0.1:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 --sig 'enableSale(address)'
+```
+
+But then we started `chisel` to interact with Anvil.
+
+```bash
+chisel --rpc-url 127.0.0.1:8545 --use 0.8.24
+```
+
+And we did `t.approve(...)` and then `t.buyTier1()` ... and it worked.
+
+## 2nd Deploy to Sepolia
+
+We know the USDC address: 0x036CbD53842c5426634e7929541eC2318f3dCF7e (paymentToken)
+InitialOwner:             0xec4a93E2e955d97F0bE36e3E3533259629EaE7cA
+ReceivingWallet:          0x6D2Dd04bF065c8A6ee9CeC97588AbB0f967E0df9
+decimals:                 6
+
+
+```
+forge script --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0xec4a93E2e955d97F0bE36e3E3533259629EaE7cA 0x036CbD53842c5426634e7929541eC2318f3dCF7e 0x6D2Dd04bF065c8A6ee9CeC97588AbB0f967E0df9 6 --sig 'run(address,address,address,uint256)'
+```
+
+Deployed with transaction hash: 0x809b3e1839b8d5d092d7ceb3b887c74337c9eda66450da74f8314efb8a14625f
+Contract address: 0x0fC7A12693811Ee5c99c99c63913506a432f55fb
+Gas: 692_699
+
+Connect with `chisel` to Base Sepolia
+
+```
+chisel --rpc-url $BASE_SEPOLIA_RPC_URL --use 0.8.24
+```
+
+We redeployed so that tier1 amount is 5 instead of 100.
+
+Transaction hash: 0x4c9162e419e3b9f780bbbf730270536ace15a6c523cfe051ee0b9a6e0eac68e1
+Contract address: 0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A

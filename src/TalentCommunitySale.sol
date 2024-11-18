@@ -2,7 +2,6 @@
 pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {console} from "forge-std/Test.sol";
 
 contract TalentCommunitySale {
     uint256 private tokenDecimals;
@@ -135,8 +134,8 @@ contract TalentCommunitySale {
         // "Tier2Bought(address,uint256)": "0x9adc2453231d9e55fe52222bb5166bb8e4e4a5deb9ad19ca1c30f7d247deb880"
         // "Tier2SoldOut()": "3a7f8bbe",
         buyTierX(
-            5,
-            24,
+            5, // slot # 5
+            24, // offset in slot
             TIER2_MAX_BUYS,
             TIER2_AMOUNT,
             0x9adc2453231d9e55fe52222bb5166bb8e4e4a5deb9ad19ca1c30f7d247deb880,
@@ -319,7 +318,52 @@ contract TalentCommunitySale {
         paymentToken.transferFrom(msg.sender, receivingWallet, tierAmount);
 
         assembly {
+            /*
+              slot #5
+              31 30 29 28 27 26 25 24 *23 22 21 20* 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
+              ------------------------------------------------------------------------------------------------
+              03 6C bD 53 84 2c 54 26 *63 4e 79 29* 54 1e C2 31 8f 3d CF 7e 6D 2D d0 4b F0 65 c8 A6 ee 9C eC 97
+              we want shr 20 bytes X 8bits/byte => 160bits
+
+              00 00 00 00 00 00 .........................................00 03 6C bD 53 84 2c 54 26 63 4e 79 29 (shr(20 x 8, tierSlotValue)
+        AND   00 00 00 00 00 00 .........................................00 00 00 00 00 00 00 00 00 FF FF FF FF (fourBytesMask)
+
+            0 AND 0 => 0
+            0 AND 1 => 0
+            1 AND 0 => 0
+            1 AND 1 => 1
+              00 00 00 00 00 00 ..............................................................00 00 63 4e 79 29 tierBought
+
+              00 00 00 00 00 00 ..............................................................00 00 63 4e 79 2A tierBought1 + 1
+
+              I need to follow reverse logic to put the tierBought back to the position 20:
+
+              so the result needs to be:
+
+              31 30 29 28 27 26 25 24 *23 22 21 20* 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01 00
+              ------------------------------------------------------------------------------------------------
+              03 6C bD 53 84 2c 54 26 *63 4e 79 2A* 54 1e C2 31 8f 3d CF 7e 6D 2D d0 4b F0 65 c8 A6 ee 9C eC 97
+
+              how do I do it?
+                shl()
+              00 00 00 00 00 00 .......63 4e 79 2A...................................................... .00 00
+
+                shl(offsetBits, 0xFFFFFFFF)
+              00 00 00 00 00 00 .......FF FF FF FF...................................................... .00 00
+                not ^
+              FF FF FF FF FF FF .......00 00 00 00...................................................... .FF FF
+                and(original value, with ^)
+              03 6C bD 53 84 2c 54 26 *00 00 00 00* 54 1e C2 31 8f 3d CF 7e 6D 2D d0 4b F0 65 c8 A6 ee 9C eC 97
+                or( ^ with the )
+              00 00 00 00 00 00 .......63 4e 79 2A...................................................... .00 00
+              or combines the two:
+              03 6C bD 53 84 2c 54 26 *63 4e 79 2A* 54 1e C2 31 8f 3d CF 7e 6D 2D d0 4b F0 65 c8 A6 ee 9C eC 97
+
+
+            */
             // increase tierBought by 1
+            // Solidity: tier1Bought++
+
             let tierSlotValue := sload(tierSlot)
 
             let offsetBits := mul(tierOffset, 8)
