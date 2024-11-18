@@ -7,47 +7,34 @@ import {USDTMock} from "./ERC20Mock.sol";
 
 contract DeployUSDTMock is Script {
     function run() public {
-      vm.startBroadcast();
+        vm.startBroadcast();
 
-      new USDTMock();
+        new USDTMock();
 
-      vm.stopBroadcast();
+        vm.stopBroadcast();
     }
 }
 
 contract DeployTalentCommunitySale is Script {
-    function setUp() public {
+    function setUp() public {}
 
+    function run(address initialOwner, address _paymentToken, address _receivingWallet, uint256 _tokenDecimals)
+        public
+    {
+        vm.startBroadcast();
+
+        new TalentCommunitySale(initialOwner, _paymentToken, _receivingWallet, _tokenDecimals);
+
+        vm.stopBroadcast();
     }
 
-    function run(
-      address initialOwner,
-      address _paymentToken,
-      address _receivingWallet,
-      uint256 _tokenDecimals
-    ) public {
-      vm.startBroadcast();
+    function enableSale(address talentCommunitySaleAddress) public {
+        vm.startBroadcast();
 
-      new TalentCommunitySale(
-        initialOwner,
-        _paymentToken,
-        _receivingWallet,
-        _tokenDecimals
-      );
+        TalentCommunitySale talentCommunitySale = TalentCommunitySale(talentCommunitySaleAddress);
 
-      vm.stopBroadcast();
-    }
+        talentCommunitySale.enableSale();
 
-    function enableSale(
-      address talentCommunitySaleAddress
-    ) public {
-
-      vm.startBroadcast();
-
-      TalentCommunitySale talentCommunitySale = TalentCommunitySale(talentCommunitySaleAddress);
-
-      talentCommunitySale.enableSale();
-
-      vm.stopBroadcast();
+        vm.stopBroadcast();
     }
 }
