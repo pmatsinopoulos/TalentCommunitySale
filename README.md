@@ -45,7 +45,20 @@ forge inspect --pretty src/TalentCommunitySale.sol:TalentCommunitySale storageLa
 
 #### After Optimization
 
-... to be provided ...
+| Name            | Type                     | Slot | Offset | Bytes | Contract                                        |
+|-----------------|--------------------------|------|--------|-------|-------------------------------------------------|
+| tokenDecimals   | uint256                  | 0    | 0      | 32    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| totalRaised     | uint256                  | 1    | 0      | 32    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| listOfBuyers    | mapping(address => bool) | 2    | 0      | 32    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| owner           | address                  | 3    | 0      | 20    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| paymentToken    | contract IERC20          | 4    | 0      | 20    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| receivingWallet | address                  | 5    | 0      | 20    | src/TalentCommunitySale.sol:TalentCommunitySale |
+| tier1Bought     | uint32                   | 5    | 20     | 4     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| tier2Bought     | uint32                   | 5    | 24     | 4     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| tier3Bought     | uint32                   | 5    | 28     | 4     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| tier4Bought     | uint32                   | 6    | 0      | 4     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| saleActive      | bool                     | 6    | 4      | 1     | src/TalentCommunitySale.sol:TalentCommunitySale |
+| _status         | uint8                    | 6    | 5      | 1     | src/TalentCommunitySale.sol:TalentCommunitySale |
 
 ### Gas Optimization
 
