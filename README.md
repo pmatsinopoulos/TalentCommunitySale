@@ -71,9 +71,7 @@ $ forge test -vvv --summary --gas-report
 ```
 we get:
 
-buyTier1: 97,894
-97,894
-97,894
+`buyTier1: 97,894`
 
 
 | src/TalentCommunitySale.sol:TalentCommunitySale contract |                 |       |        |        |         |
@@ -377,7 +375,6 @@ forge script --rpc-url 127.0.0.1:8545 --broadcast --private-key 0xac0974bec39a17
 
 which deployed on address : 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
 
-
 Then we enable the sale on the contract:
 
 ```
@@ -392,7 +389,7 @@ chisel --rpc-url 127.0.0.1:8545 --use 0.8.24
 
 And we did `t.approve(...)` and then `t.buyTier1()` ... and it worked.
 
-## 2nd Deploy to Sepolia
+## 2nd Deploy to Base Sepolia
 
 We know the USDC address: 0x036CbD53842c5426634e7929541eC2318f3dCF7e (paymentToken)
 InitialOwner:             0xec4a93E2e955d97F0bE36e3E3533259629EaE7cA
@@ -404,17 +401,63 @@ decimals:                 6
 forge script --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0xec4a93E2e955d97F0bE36e3E3533259629EaE7cA 0x036CbD53842c5426634e7929541eC2318f3dCF7e 0x6D2Dd04bF065c8A6ee9CeC97588AbB0f967E0df9 6 --sig 'run(address,address,address,uint256)'
 ```
 
-Deployed with transaction hash: 0x809b3e1839b8d5d092d7ceb3b887c74337c9eda66450da74f8314efb8a14625f
-Contract address: 0x0fC7A12693811Ee5c99c99c63913506a432f55fb
-Gas: 692_699
+Deployed with transaction hash: [0x809b3e1839b8d5d092d7ceb3b887c74337c9eda66450da74f8314efb8a14625f](https://sepolia.basescan.org/tx/0x809b3e1839b8d5d092d7ceb3b887c74337c9eda66450da74f8314efb8a14625f)
+Contract address: [0x0fC7A12693811Ee5c99c99c63913506a432f55fb](https://sepolia.basescan.org/address/0x0fC7A12693811Ee5c99c99c63913506a432f55fb)
+Gas: `692_699`
 
-Connect with `chisel` to Base Sepolia
+We redeployed so that tier1 amount is `5` instead of `100`.
+
+Transaction hash: [0x4c9162e419e3b9f780bbbf730270536ace15a6c523cfe051ee0b9a6e0eac68e1](https://sepolia.basescan.org/tx/0x4c9162e419e3b9f780bbbf730270536ace15a6c523cfe051ee0b9a6e0eac68e1)
+Contract address: [0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A](https://sepolia.basescan.org/address/0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A)
+
+This allowed us to run a script to buyTier1():
+
+1. We enable the sale with:
 
 ```
-chisel --rpc-url $BASE_SEPOLIA_RPC_URL --use 0.8.24
+forge script --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A --sig 'enableSale(address)'
 ```
 
-We redeployed so that tier1 amount is 5 instead of 100.
+which gave us the transaction hash 0x8dfeffc7a1f14114feb00d0902094e44166222b0c922051c386783b6e4f019e8
+with gas used `28,442`. This is equal to the `median` reported by `forge test`. Compare that to the
+`45,541` which was used on `Base` with the original non-optimized version of the contract (transaction: https://basescan.org/tx/0xf17e1d3085b208edb5258e070de80cef5e0257a1295b18fa1a326480352f04a9).
 
-Transaction hash: 0x4c9162e419e3b9f780bbbf730270536ace15a6c523cfe051ee0b9a6e0eac68e1
-Contract address: 0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A
+1. We then approve the `TalentCommunitySale` to spend `5 USDC` for the account that does the `buyTier1()`.
+
+```
+forge script --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A 0x036CbD53842c5426634e7929541eC2318f3dCF7e 5000000 --sig 'approve(address,address,uint256)'
+```
+
+Transaction: [0x0dc3b3ea9d89b0fab3d643dbae3068dde77b4e4e1f4e0e90c0c30c3098f0f9fc](https://sepolia.basescan.org/tx/0x0dc3b3ea9d89b0fab3d643dbae3068dde77b4e4e1f4e0e90c0c30c3098f0f9fc)
+
+1. We then call `buyTier1()` which will transfer `5 USDC` from account `0x036CbD53842c5426634e7929541eC2318f3dCF7e` to account `0x6D2Dd04bF065c8A6ee9CeC97588AbB0f967E0df9`
+
+```
+forge script --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A --sig 'buyTier1(address)'
+```
+
+Transaction hash: [0xf7633b809fc2fff6d0c43fc98037c25f9664d89bd412605a2c965abcbf77201a](https://sepolia.basescan.org/tx/0xf7633b809fc2fff6d0c43fc98037c25f9664d89bd412605a2c965abcbf77201a)
+
+Gas used `123,926`. This is actually quite higher to the numbers reported by `forge test --gas-report` (median: `72,160`). **Why?**
+
+**WE REPEAT** `buyTier1()` for another account.
+
+Then we funded with `5 USDC` the account `0x436cA2299e7fDF36C4b1164cA3e80081E68c318A`
+
+1. We then approve the `TalentCommunitySale` to spend `5 USDC` for the account `0x436cA2299e7fDF36C4b1164cA3e80081E68c318A` that does the `buyTier1()`.
+
+```
+forge script --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY_SECOND_ACCOUNT script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A 0x036CbD53842c5426634e7929541eC2318f3dCF7e 5000000 --sig 'approve(address,address,uint256)'
+```
+
+Transaction hash: [0x84fd58c890920bf14816e675103864f27c2a1b6255ca27a11f485d951254ead8](https://sepolia.basescan.org/tx/0x84fd58c890920bf14816e675103864f27c2a1b6255ca27a11f485d951254ead8)
+
+1. We then call `buyTier1()` which will transfer `5 USDC` from account `0x436cA2299e7fDF36C4b1164cA3e80081E68c318A` to account `0x6D2Dd04bF065c8A6ee9CeC97588AbB0f967E0df9`
+
+```
+forge script --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --private-key $PRIVATE_KEY_SECOND_ACCOUNT script/DeployTalentCommunitySale.s.sol:DeployTalentCommunitySale 0x76ECF5faB5Ce2B0a62718d101b944022C74FEA4A --sig 'buyTier1(address)'
+```
+
+Transaction hash: [0x55c422045a3fc126d03cd69f232d982b11115d69558949087aee4057e6793ff6](https://sepolia.basescan.org/tx/0x55c422045a3fc126d03cd69f232d982b11115d69558949087aee4057e6793ff6)
+
+Gas used `89,726`. This is again quite higher to the numbers reported by `forge test --gas-report` (median: `72,160`). **Why?**
