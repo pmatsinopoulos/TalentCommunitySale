@@ -157,6 +157,7 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier1_WhenTier1BoughtIsGreaterThanTIER1_MAX_BUYS_ItReverts() public {
         talentCommunitySale.enableSale();
         uint32 tier1MaxBuys = talentCommunitySale.TIER1_MAX_BUYS(); // 100
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
 
         for (uint256 i = 1; i <= tier1MaxBuys + 1; i++) {
             address caller = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
@@ -164,7 +165,6 @@ contract TalentCommunitySaleTest is Test {
             // John address
             // ... more address
 
-            uint256 amount = 100 * 10 ** tokenDecimals;
             paymentToken.transfer(caller, amount);
             // Panos now has 100M USDT
             // John 100M USDT
@@ -192,7 +192,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
 
         for (uint256 i = 1; i <= 2; i++) {
             paymentToken.transfer(caller, amount);
@@ -213,7 +213,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals; // 100
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
 
         // I am setting the +caller+ balance to lower than +amount+ by just
         // 1 cent.
@@ -235,7 +235,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
 
         vm.prank(caller);
         paymentToken.approve(address(talentCommunitySale), amount);
@@ -271,7 +271,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
 
         // satisfy line 57, 58, 59, 60
         vm.prank(caller);
@@ -306,7 +306,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
         paymentToken.transfer(caller, amount);
 
         vm.prank(caller);
@@ -329,7 +329,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -343,7 +343,7 @@ contract TalentCommunitySaleTest is Test {
         // TEST
         uint256 totalRaisedAfter = talentCommunitySale.totalRaised();
 
-        assertEq(totalRaisedAfter, totalRaisedBefore + (100 * 10 ** tokenDecimals));
+        assertEq(totalRaisedAfter, totalRaisedBefore + amount);
     }
 
     function test_BuyTier1_EmitsTier1Bought() public {
@@ -351,7 +351,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -370,7 +370,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 100 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER1_AMOUNT();
 
         paymentTokenBad.transfer(caller, amount);
 
@@ -417,7 +417,7 @@ contract TalentCommunitySaleTest is Test {
         for (uint256 i = 1; i <= tier2MaxBuys + 1; i++) {
             address caller = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
 
-            uint256 amount = 250 * 10 ** tokenDecimals;
+            uint256 amount = talentCommunitySale.TIER2_AMOUNT();
             paymentToken.transfer(caller, amount);
 
             vm.prank(caller); // sets the "msg.sender" of the next contract call.
@@ -437,7 +437,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 250 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER2_AMOUNT();
 
         for (uint256 i = 1; i <= 2; i++) {
             paymentToken.transfer(caller, amount);
@@ -458,7 +458,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 250 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER2_AMOUNT();
 
         paymentToken.transfer(caller, amount - 1);
 
@@ -476,7 +476,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 250 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER2_AMOUNT();
 
         paymentTokenBad.transfer(caller, amount);
 
@@ -497,7 +497,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 250 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER2_AMOUNT();
 
         vm.prank(caller);
         paymentToken.approve(address(talentCommunitySale), amount);
@@ -531,7 +531,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 250 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER2_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -551,7 +551,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 250 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER2_AMOUNT();
         paymentToken.transfer(caller, amount);
 
         vm.prank(caller);
@@ -574,7 +574,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 250 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER2_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -586,7 +586,7 @@ contract TalentCommunitySaleTest is Test {
 
         uint256 totalRaisedAfter = talentCommunitySale.totalRaised();
 
-        assertEq(totalRaisedAfter, totalRaisedBefore + (250 * 10 ** tokenDecimals));
+        assertEq(totalRaisedAfter, totalRaisedBefore + amount);
     }
 
     function test_BuyTier2_EmitsTier2Bought() public {
@@ -594,7 +594,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 250 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER2_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -634,11 +634,11 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier3_WhenTier3BoughtIsGreaterThanTIER3_MAX_BUYS_ItReverts() public {
         talentCommunitySale.enableSale();
         uint32 tier3MaxBuys = talentCommunitySale.TIER3_MAX_BUYS();
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
 
         for (uint256 i = 1; i <= tier3MaxBuys + 1; i++) {
             address caller = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
 
-            uint256 amount = 500 * 10 ** tokenDecimals;
             paymentToken.transfer(caller, amount);
 
             vm.prank(caller); // sets the "msg.sender" of the next contract call.
@@ -658,7 +658,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 500 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
 
         for (uint256 i = 1; i <= 2; i++) {
             paymentToken.transfer(caller, amount);
@@ -679,7 +679,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 500 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
 
         paymentToken.transfer(caller, amount - 1);
 
@@ -697,7 +697,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 500 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
 
         paymentTokenBad.transfer(caller, amount);
 
@@ -718,7 +718,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 500 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
 
         vm.prank(caller);
         paymentToken.approve(address(talentCommunitySale), amount);
@@ -752,7 +752,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 500 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -772,7 +772,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 500 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
         paymentToken.transfer(caller, amount);
 
         vm.prank(caller);
@@ -795,7 +795,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 500 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -807,7 +807,7 @@ contract TalentCommunitySaleTest is Test {
 
         uint256 totalRaisedAfter = talentCommunitySale.totalRaised();
 
-        assertEq(totalRaisedAfter, totalRaisedBefore + (500 * 10 ** tokenDecimals));
+        assertEq(totalRaisedAfter, totalRaisedBefore + amount);
     }
 
     function test_BuyTier3_EmitsTier3Bought() public {
@@ -815,7 +815,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 500 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER3_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -855,11 +855,11 @@ contract TalentCommunitySaleTest is Test {
     function test_BuyTier4_WhenTier4BoughtIsGreaterThanTIER4_MAX_BUYS_ItReverts() public {
         talentCommunitySale.enableSale();
         uint32 tier4MaxBuys = talentCommunitySale.TIER4_MAX_BUYS();
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
 
         for (uint256 i = 1; i <= tier4MaxBuys + 1; i++) {
             address caller = address(uint160(uint256(keccak256(abi.encodePacked(i)))));
 
-            uint256 amount = 1000 * 10 ** tokenDecimals;
             paymentToken.transfer(caller, amount);
 
             vm.prank(caller); // sets the "msg.sender" of the next contract call.
@@ -879,7 +879,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 1000 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
 
         for (uint256 i = 1; i <= 2; i++) {
             paymentToken.transfer(caller, amount);
@@ -900,7 +900,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 1000 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
 
         paymentToken.transfer(caller, amount - 1);
 
@@ -918,7 +918,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 1000 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
 
         paymentTokenBad.transfer(caller, amount);
 
@@ -939,7 +939,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 1000 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
 
         vm.prank(caller);
         paymentToken.approve(address(talentCommunitySale), amount);
@@ -973,7 +973,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 1000 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -993,7 +993,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 1000 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
         paymentToken.transfer(caller, amount);
 
         vm.prank(caller);
@@ -1016,7 +1016,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 1000 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
@@ -1028,7 +1028,7 @@ contract TalentCommunitySaleTest is Test {
 
         uint256 totalRaisedAfter = talentCommunitySale.totalRaised();
 
-        assertEq(totalRaisedAfter, totalRaisedBefore + (1000 * 10 ** tokenDecimals));
+        assertEq(totalRaisedAfter, totalRaisedBefore + amount);
     }
 
     function test_BuyTier4_EmitsTier4Bought() public {
@@ -1036,7 +1036,7 @@ contract TalentCommunitySaleTest is Test {
 
         address caller = address(12347);
 
-        uint256 amount = 1000 * 10 ** tokenDecimals;
+        uint256 amount = talentCommunitySale.TIER4_AMOUNT();
 
         paymentToken.transfer(caller, amount);
 
