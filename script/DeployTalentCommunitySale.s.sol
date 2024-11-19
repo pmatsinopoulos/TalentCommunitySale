@@ -41,22 +41,22 @@ contract DeployTalentCommunitySale is Script {
     }
 
     function approve(address talentCommunitySaleAddress, address paymentTokenAddress, uint256 amountWei) public {
-      vm.startBroadcast();
+        vm.startBroadcast();
 
-      IERC20 paymentToken = IERC20(paymentTokenAddress);
+        IERC20 paymentToken = IERC20(paymentTokenAddress);
 
-      paymentToken.approve(talentCommunitySaleAddress, amountWei);
+        paymentToken.approve(talentCommunitySaleAddress, amountWei);
 
-      vm.stopBroadcast();
+        vm.stopBroadcast();
     }
 
     function buyTier1(address talentCommunitySaleAddress) public {
-      vm.startBroadcast();
+        vm.startBroadcast();
 
-      TalentCommunitySale talentCommunitySale = TalentCommunitySale(talentCommunitySaleAddress);
+        TalentCommunitySale talentCommunitySale = TalentCommunitySale(talentCommunitySaleAddress);
 
-      talentCommunitySale.buyTier1();
+        talentCommunitySale.buyTier1();
 
-      vm.stopBroadcast();
+        vm.stopBroadcast();
     }
 }
