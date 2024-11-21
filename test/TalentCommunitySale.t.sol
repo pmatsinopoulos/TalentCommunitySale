@@ -17,10 +17,6 @@ contract TalentCommunitySaleTest is Test {
     address receivingWallet = address(1337);
     uint256 tokenDecimals = 6;
 
-    event Tier1Bought(address indexed buyer, uint256 amount);
-    event Tier2Bought(address indexed buyer, uint256 amount);
-    event Tier3Bought(address indexed buyer, uint256 amount);
-    event Tier4Bought(address indexed buyer, uint256 amount);
     event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);
 
     error ERC20InsufficientBalance(address from, uint256 balance, uint256 required);
@@ -360,7 +356,7 @@ contract TalentCommunitySaleTest is Test {
 
         vm.prank(caller);
         vm.expectEmit(true, false, false, true);
-        emit Tier1Bought(caller, amount);
+        emit TalentCommunitySale.Tier1Bought(caller, amount);
 
         talentCommunitySale.buyTier1();
     }
@@ -603,7 +599,7 @@ contract TalentCommunitySaleTest is Test {
 
         vm.prank(caller);
         vm.expectEmit(true, false, false, true);
-        emit Tier2Bought(caller, amount);
+        emit TalentCommunitySale.Tier2Bought(caller, amount);
 
         talentCommunitySale.buyTier2();
     }
@@ -824,7 +820,7 @@ contract TalentCommunitySaleTest is Test {
 
         vm.prank(caller);
         vm.expectEmit(true, false, false, true);
-        emit Tier3Bought(caller, amount);
+        emit TalentCommunitySale.Tier3Bought(caller, amount);
 
         talentCommunitySale.buyTier3();
     }
@@ -1045,7 +1041,7 @@ contract TalentCommunitySaleTest is Test {
 
         vm.prank(caller);
         vm.expectEmit(true, false, false, true);
-        emit Tier4Bought(caller, amount);
+        emit TalentCommunitySale.Tier4Bought(caller, amount);
 
         talentCommunitySale.buyTier4();
     }
