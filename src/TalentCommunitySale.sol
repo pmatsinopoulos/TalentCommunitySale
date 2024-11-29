@@ -9,6 +9,12 @@ contract TalentCommunitySale {
     mapping(address => bool) public listOfBuyers;
 
     address public owner;
+
+    uint32 public tier1Bought;
+    uint32 public tier2Bought;
+    uint32 public tier3Bought;
+    uint32 public tier4Bought;
+
     IERC20 public paymentToken;
     address public receivingWallet;
 
@@ -21,11 +27,6 @@ contract TalentCommunitySale {
     uint256 public immutable TIER2_AMOUNT;
     uint256 public immutable TIER3_AMOUNT;
     uint256 public immutable TIER4_AMOUNT;
-
-    uint32 public tier1Bought;
-    uint32 public tier2Bought;
-    uint32 public tier3Bought;
-    uint32 public tier4Bought;
 
     bool public saleActive;
 
@@ -50,6 +51,36 @@ contract TalentCommunitySale {
     error Tier4SoldOut();
     error AddressAlreadyBought(address buyer);
 
+    // SLOT constants (SLOT, OFFSET, BYTES)
+    // ------------------------------------
+    // These are useful to avoid using magic numbers
+    // in the assembly code. Also, it is much easier
+    // to rearrange the storage and then just set here
+    // the new values.
+    uint8 private constant STORAGE_TOTAL_RAISED_SLOT = 1;
+
+    uint8 private constant STORAGE_LIST_OF_BUYERS_SLOT = 2;
+
+    uint8 private constant STORAGE_OWNER_SLOT = 3;
+
+    uint8 private constant STORAGE_TIER1_BOUGHT_SLOT = 3;
+    uint8 private constant STORAGE_TIER1_BOUGHT_OFFSET = 20;
+
+    uint8 private constant STORAGE_TIER2_BOUGHT_SLOT = 3;
+    uint8 private constant STORAGE_TIER2_BOUGHT_OFFSET = 24;
+
+    uint8 private constant STORAGE_TIER3_BOUGHT_SLOT = 3;
+    uint8 private constant STORAGE_TIER3_BOUGHT_OFFSET = 28;
+
+    uint8 private constant STORAGE_TIER4_BOUGHT_SLOT = 4;
+    uint8 private constant STORAGE_TIER4_BOUGHT_OFFSET = 0;
+
+    uint8 private constant STORAGE_SALE_ACTIVE_SLOT = 5;
+    uint8 private constant STORAGE_SALE_ACTIVE_OFFSET = 20;
+
+    uint8 private constant STORAGE__STATUS_SLOT = 5;
+    uint8 private constant STORAGE__STATUS_OFFSET = 21;
+
     constructor(address initialOwner, address _paymentToken, address _receivingWallet, uint256 _tokenDecimals) {
         owner = initialOwner;
         paymentToken = IERC20(_paymentToken);
@@ -69,23 +100,25 @@ contract TalentCommunitySale {
 
     function enableSale() external {
         onlyOwner();
+
         assembly {
-            let slot6 := sload(6)
-            let offsetBits := mul(4, 8)
-            let zeroMask := not(shl(offsetBits, 0xFF)) // 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFF
-            let setMask := shl(offsetBits, 0x01) // 0x0000000000000000000000000000000000000000000000000000000100000000
-            sstore(6, or(and(slot6, zeroMask), setMask))
+            let slotSaleActiveValue := sload(STORAGE_SALE_ACTIVE_SLOT)
+            let offsetBits := mul(STORAGE_SALE_ACTIVE_OFFSET, 8)
+            let zeroMask := not(shl(offsetBits, 0xFF))
+            let setMask := shl(offsetBits, 0x01)
+            sstore(STORAGE_SALE_ACTIVE_SLOT, or(and(slotSaleActiveValue, zeroMask), setMask))
         }
     }
 
     function disableSale() external {
         onlyOwner();
+
         assembly {
-            let slot6 := sload(6)
-            let offsetBits := mul(4, 8)
-            let zeroMask := not(shl(offsetBits, 0xFF)) // 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFF
-            let setMask := 0x00 // 0x0000000000000000000000000000000000000000000000000000000000000000
-            sstore(6, or(and(slot6, zeroMask), setMask))
+            let slotSaleActiveValue := sload(STORAGE_SALE_ACTIVE_SLOT)
+            let offsetBits := mul(STORAGE_SALE_ACTIVE_OFFSET, 8)
+            let zeroMask := not(shl(offsetBits, 0xFF))
+            let setMask := 0x00
+            sstore(STORAGE_SALE_ACTIVE_SLOT, or(and(slotSaleActiveValue, zeroMask), setMask))
         }
     }
 
@@ -121,8 +154,8 @@ contract TalentCommunitySale {
         // "Tier1Bought(address,uint256)": "0xd0ec74678527414a67543ab9b58cade4fbf20e05b82789647832b15ac4fb2997"
         // "Tier1SoldOut()": "1c2ec185",
         buyTierX(
-            5,
-            20,
+            STORAGE_TIER1_BOUGHT_SLOT,
+            STORAGE_TIER1_BOUGHT_OFFSET,
             TIER1_MAX_BUYS,
             TIER1_AMOUNT,
             0xd0ec74678527414a67543ab9b58cade4fbf20e05b82789647832b15ac4fb2997,
@@ -134,8 +167,8 @@ contract TalentCommunitySale {
         // "Tier2Bought(address,uint256)": "0x9adc2453231d9e55fe52222bb5166bb8e4e4a5deb9ad19ca1c30f7d247deb880"
         // "Tier2SoldOut()": "3a7f8bbe",
         buyTierX(
-            5, // slot # 5
-            24, // offset in slot
+            STORAGE_TIER2_BOUGHT_SLOT,
+            STORAGE_TIER2_BOUGHT_OFFSET,
             TIER2_MAX_BUYS,
             TIER2_AMOUNT,
             0x9adc2453231d9e55fe52222bb5166bb8e4e4a5deb9ad19ca1c30f7d247deb880,
@@ -147,8 +180,8 @@ contract TalentCommunitySale {
         // "Tier3Bought(address,uint256)": "0x9e23d4a7f5fc8f2dedbd7bdee234e901efa73d99951af297a1f72f9eee5078cb"
         // "Tier3SoldOut()": "3a7f8bbe",
         buyTierX(
-            5,
-            28,
+            STORAGE_TIER3_BOUGHT_SLOT,
+            STORAGE_TIER3_BOUGHT_OFFSET,
             TIER3_MAX_BUYS,
             TIER3_AMOUNT,
             0x9e23d4a7f5fc8f2dedbd7bdee234e901efa73d99951af297a1f72f9eee5078cb,
@@ -160,8 +193,8 @@ contract TalentCommunitySale {
         // "Tier4Bought(address,uint256)": "0x5f426b0d5c5130a87e887be8c0965f389528c60f814e98bb1fa671915770151a"
         // "Tier4SoldOut()": "362f206a",
         buyTierX(
-            6,
-            0,
+            STORAGE_TIER4_BOUGHT_SLOT,
+            STORAGE_TIER4_BOUGHT_OFFSET,
             TIER4_MAX_BUYS,
             TIER4_AMOUNT,
             0x5f426b0d5c5130a87e887be8c0965f389528c60f814e98bb1fa671915770151a,
@@ -171,15 +204,32 @@ contract TalentCommunitySale {
 
     function onlyOwner() internal view {
         assembly {
-            let storedOwner := sload(3)
+            let storedOwner := sload(STORAGE_OWNER_SLOT)
 
             if iszero(eq(caller(), storedOwner)) {
+                // revert
                 let freeMemoryPointer := mload(0x40)
                 let initialFreeMemoryPointer := freeMemoryPointer
 
-                mstore(freeMemoryPointer, shl(mul(28, 8), 0x118cdaa7))
-                freeMemoryPointer := add(freeMemoryPointer, 4)
+                // 28 is the difference between 32 and 4, where
+                // 32 is the size of the memory word we store the identifier
+                // into and 4 is the size of the identifier.
+                //
+                // Note that we store the value left aligned. i.e.
+                //
+                // byte position: 31 30 29 28 27 26 25 ... 01 00
+                // ---------------------------------------------
+                // byte value:    11 8c da a7 00 00 00 ... 00 00
+                mstore(freeMemoryPointer, shl(mul(28, 8), 0x118cdaa7)) // OwnableUnauthorizedAccount(address)
+                freeMemoryPointer := add(freeMemoryPointer, 4) // we increase the free memory pointer by 4 to make sure we then write next to the identifier
 
+                // here we save the caller address next to the error identifier.
+                // Note that the addresses are 20 bytes long, but need to be right aligned into a 32 bytes word.
+                // If, for example, the owner address is 0x742d35Cc6634C0532925a3b844Bc454e4438f44e
+                // then it will be stored next to the identifier as
+                //
+                // ------------|------------------------------------------------------------------------------------------------
+                // 11 8c da a7 | 00 00 00 00 00 00 00 00 00 00 00 00 74 2d 35 Cc 66 34 C0 53 29 25 a3 b8 44 Bc 45 4e 44 38 f4 4e
                 mstore(freeMemoryPointer, caller())
 
                 freeMemoryPointer := add(freeMemoryPointer, 32)
@@ -196,10 +246,10 @@ contract TalentCommunitySale {
      */
     function _transferOwnership(address newOwner) internal {
         assembly {
-            let oldOwner := sload(3)
+            let oldOwner := sload(STORAGE_OWNER_SLOT)
 
-            sstore(3, newOwner)
-            // 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0
+            sstore(STORAGE_OWNER_SLOT, newOwner)
+            // 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0 / "OwnershipTransferred(address,address)"
             // it is taken from forge inspect --pretty TalentCommunitySale events
             log3(0x00, 0x00, 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0, oldOwner, newOwner)
         }
@@ -207,8 +257,8 @@ contract TalentCommunitySale {
 
     function _nonReentrantBefore() private {
         assembly {
-            let slot6 := sload(6)
-            let offsetBits := mul(5, 8)
+            let slot6 := sload(STORAGE__STATUS_SLOT)
+            let offsetBits := mul(STORAGE__STATUS_OFFSET, 8)
             let entered := shl(offsetBits, 0x02) // 0x0000000000000000000000000000000000000000000000000000020000000000 // ENTERED
 
             if eq(and(slot6, entered), entered) {
@@ -223,19 +273,19 @@ contract TalentCommunitySale {
             }
 
             let zeroMask := not(shl(offsetBits, 0xFF)) // 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFFFF
-            sstore(6, or(and(slot6, zeroMask), entered))
+            sstore(STORAGE__STATUS_SLOT, or(and(slot6, zeroMask), entered))
         }
     }
 
     function _nonReentrantAfter() private {
         assembly {
-            let slot6 := sload(6)
-            let offsetBits := mul(5, 8)
+            let slot6 := sload(STORAGE__STATUS_SLOT)
+            let offsetBits := mul(STORAGE__STATUS_OFFSET, 8)
             let notEntered := shl(offsetBits, 0x01) // 0x0000000000000000000000000000000000000000000000000000010000000000 // NOT_ENTERED
 
             let setToZeroMask := not(shl(offsetBits, 0xFF)) // 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFFFF
 
-            sstore(6, or(and(slot6, setToZeroMask), notEntered))
+            sstore(STORAGE__STATUS_SLOT, or(and(slot6, setToZeroMask), notEntered))
         }
     }
 
@@ -251,9 +301,9 @@ contract TalentCommunitySale {
 
         assembly {
             // check for sale being active
-            let saleActiveSlot := sload(6)
-            let offsetBits := mul(4, 8) // offset 4, 8 bits per byte
-            let isSaleActive := shr(offsetBits, and(saleActiveSlot, shl(offsetBits, 0xFF)))
+            let saleActiveSlotValue := sload(STORAGE_SALE_ACTIVE_SLOT)
+            let offsetBits := mul(STORAGE_SALE_ACTIVE_OFFSET, 8)
+            let isSaleActive := shr(offsetBits, and(saleActiveSlotValue, shl(offsetBits, 0xFF)))
 
             if iszero(isSaleActive) {
                 let freeMemoryPointer := mload(0x40)
@@ -296,11 +346,11 @@ contract TalentCommunitySale {
             mstore(freeMemoryPointer, buyerAddress) // 32 bytes
             freeMemoryPointer := add(freeMemoryPointer, 32)
 
-            mstore(freeMemoryPointer, 2) // slot of mapping for listOfBuyers
+            mstore(freeMemoryPointer, STORAGE_LIST_OF_BUYERS_SLOT) // slot of mapping for listOfBuyers
             freeMemoryPointer := add(freeMemoryPointer, 32)
             mstore(0x40, freeMemoryPointer)
 
-            let listOfBuyersSlotForBuyer := keccak256(initialFreeMemoryPointer, 64)
+            let listOfBuyersSlotForBuyer := keccak256(initialFreeMemoryPointer, 64) // 32 + 32 bytes from memory
 
             if sload(listOfBuyersSlotForBuyer) {
                 initialFreeMemoryPointer := freeMemoryPointer
@@ -387,7 +437,7 @@ contract TalentCommunitySale {
             mstore(freeMemoryPointer, buyerAddress) // 32 bytes
             freeMemoryPointer := add(freeMemoryPointer, 32)
 
-            mstore(freeMemoryPointer, 2) // slot of mapping for listOfBuyers
+            mstore(freeMemoryPointer, STORAGE_LIST_OF_BUYERS_SLOT) // slot of mapping for listOfBuyers
             freeMemoryPointer := add(freeMemoryPointer, 32)
             mstore(0x40, freeMemoryPointer)
 
@@ -395,11 +445,11 @@ contract TalentCommunitySale {
 
             sstore(listOfBuyersSlotForBuyer, 1)
 
-            // increate totalRaised by tierAmount
+            // increase totalRaised by tierAmount
 
-            let totalRaisedSlotValue := sload(1) // read the totalRaised value
+            let totalRaisedSlotValue := sload(STORAGE_TOTAL_RAISED_SLOT) // read the totalRaised value
             totalRaisedSlotValue := add(totalRaisedSlotValue, tierAmount)
-            sstore(1, totalRaisedSlotValue)
+            sstore(STORAGE_TOTAL_RAISED_SLOT, totalRaisedSlotValue)
 
             // emit Tier4Bought(msg.sender, tierAmount);
             initialFreeMemoryPointer := freeMemoryPointer
@@ -408,7 +458,7 @@ contract TalentCommunitySale {
             freeMemoryPointer := add(freeMemoryPointer, 32)
             mstore(0x40, freeMemoryPointer)
 
-            log2(initialFreeMemoryPointer, 32, boughtEvent, caller())
+            log2(initialFreeMemoryPointer, 32, boughtEvent, buyerAddress)
         }
 
         _nonReentrantAfter();
